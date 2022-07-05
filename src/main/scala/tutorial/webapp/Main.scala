@@ -37,7 +37,7 @@ object TutorialApp {
     canvas.width = (squareWidth * width).toInt
     canvas.height = (squareWidth * height).toInt
     
-    val trace = BinaryTrace("./resources/binary.txt")
+    val trace = BinaryTrace("./resources/trace.bin")
 
     trace.length().foreach { l =>
       
