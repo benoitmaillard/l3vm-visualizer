@@ -36,7 +36,7 @@ case class BinaryTrace(url: String) extends ProgramTrace {
   }
 
   def length(): Future[Int] =
-    Http.fetchHead(url).map(h => h.get("content-length").toInt)
+    Http.fetchHead(url).map(h => h.get("content-length").toInt / nBytes)
 
   private def extractEvent(s: Seq[Short]) =
    
