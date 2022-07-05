@@ -22,10 +22,12 @@ class GridManager(
 
   private def processEvent(e: TraceEvent, pos: Int): Unit = e match {
     case MemoryRead(address) =>
-      drawWord(address, GridManager.ReadColor.copy(a = 1.0f / pos))
+      drawWord(address, GridManager.ReadColor.copy(a = alphaAt(pos)))
     case MemoryWrite(address) =>
-      drawWord(address, GridManager.WriteColor.copy(a = 1.0f / pos))
+      drawWord(address, GridManager.WriteColor.copy(a = alphaAt(pos)))
   }
+
+  private def alphaAt(pos: Int) = 1.0f / (pos+1)
 
   private def clear(): Unit = ctx.clearRect(0, 0, canvas.width, canvas.height)
 
