@@ -20,28 +20,25 @@ import org.scalajs.dom.Request
 import org.scalajs.dom.Headers
 import scala.concurrent.Future
 import scala.concurrent.Promise
+import org.scalajs.dom.Event
 
 object TutorialApp {
-  val squareWidth = 5.0
+  val squareWidth = 5
   val width = 200
   val height = 400
+  val last = 50
   val canvas = document.getElementById("canvas").asInstanceOf[html.Canvas]
   val ctx = canvas.getContext("2d").asInstanceOf[dom.CanvasRenderingContext2D]
-  val last = 50
 
-  var paused = true
-  var overrideT = -1
-  
-
-  def main(args: Array[String]): Unit = {
-    canvas.width = (squareWidth * width).toInt
-    canvas.height = (squareWidth * height).toInt
-    
+  def main(args: Array[String]): Unit = {    
     val trace = BinaryTrace("./resources/trace.bin")
+    val memRep = ScanMemoryRepresentation(width, height)
+    val grid = GridManager(canvas, memRep, squareWidth)
+    grid.setup()
 
     trace.length().foreach { l =>
       
-      val animation = Animation(refresh(trace), l)
+      val animation = Animation(refresh(trace, grid), l)
       document.getElementById("range").setAttribute("max", l.toString)
 
       document
@@ -52,50 +49,24 @@ object TutorialApp {
           animation.set(value)
         })
       
-      document.getElementById("play").asInstanceOf[html.Button].addEventListener("click", {e =>
-        animation.toggle()  
-      })
-
-      document.getElementById("next").asInstanceOf[html.Button].addEventListener("click", {e =>
-        animation.move(1)  
-      })
-
-      document.getElementById("prev").asInstanceOf[html.Button].addEventListener("click", {e =>
-        animation.move(-1)  
-      })
+      buttonListener("play", e => animation.toggle())
+      buttonListener("reset", e => animation.reset())
+      buttonListener("prev", e => animation.move(-1))
+      buttonListener("next", e => animation.move(1))
+      buttonListener("faster", e => animation.setInterval(animation.getInterval() * 2))
+      buttonListener("slower", e => animation.setInterval(animation.getInterval() / 2))
+      buttonListener("reverse", e => animation.reverse())
     }
 
   }
 
-  def refresh(trace: ProgramTrace)(i: Int): Future[Unit] = {
+  def buttonListener(id: String, action: Event => Unit) =
+    document.getElementById(id).asInstanceOf[html.Button].addEventListener("click", action)
+
+  def refresh(trace: ProgramTrace, grid: GridManager)(i: Int): Future[Unit] = {
     trace.read(i, last).map { s =>
       document.getElementById("range").asInstanceOf[html.Input].value = i.toString
-      processEventSeq(s)
+      grid.processEventSeq(s)
     }
   }
-
-  def processEventSeq(s: Seq[TraceEvent]): Unit =
-    ctx.clearRect(0, 0, canvas.width, canvas.height)
-    // println(s)
-    s.zipWithIndex.foreach { (e, i) =>
-      processEvent(e, i)
-    }
-
-  def processEvent(e: TraceEvent, i: Int): Unit = e match {
-    case MemoryRead(address)  => drawWord(ctx, address, 1.0 / (i + 1))
-    case MemoryWrite(address) => drawWord(ctx, address, 1.0 / (i + 1))
-  }
-
-  def drawWord(ctx: CanvasRenderingContext2D, i: Int, alpha: Double): Unit =
-    drawSquare(ctx, i % width, i / width, alpha)
-
-  def drawSquare(
-      ctx: CanvasRenderingContext2D,
-      i: Int,
-      j: Int,
-      alpha: Double
-  ): Unit =
-    ctx.clearRect(squareWidth * i, squareWidth * j, squareWidth, squareWidth)
-    ctx.fillStyle = f"rgba(0, 0, 255, $alpha)"
-    ctx.fillRect(squareWidth * i, squareWidth * j, squareWidth, squareWidth)
 }
