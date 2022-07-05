@@ -7,18 +7,19 @@ import scala.scalajs.js
 
 class Animation(action: Int => Future[Unit], max: Int) {
   private var running = false
-  private var interval: Long = 50
+  private var reversed = false
+  private var interval = Animation.DefaultInterval
   private var state = 0
 
   private def next(): Future[Unit] =
     val t = System.currentTimeMillis()
-    if running then
+    if running && state >= 0 && state < max then
       action(state).flatMap { _ =>
-        if state >= max then {
-          running = false
+        state += (if reversed then -1 else 1)
+        
+        if (state < 0 || state >= max) {
+          reset()
         }
-
-        state += 1
 
         val elapsed = System.currentTimeMillis() - t
         val remaining = interval - elapsed
@@ -41,7 +42,12 @@ class Animation(action: Int => Future[Unit], max: Int) {
 
   def move(diff: Int): Unit = set(state + diff)
 
-  def reset(): Unit = set(0)
+  def reset(): Unit = {
+    interval = Animation.DefaultInterval
+    running = false
+    reversed = false
+    set(0)
+  }
 
   def set(at: Int): Unit = {
     state = at
@@ -52,5 +58,14 @@ class Animation(action: Int => Future[Unit], max: Int) {
     interval = newInterval
   }
 
+  def reverse(): Unit =
+    reversed = !reversed
+
   def isRunning(): Boolean = running
+
+  def getInterval(): Long = interval
+}
+
+object Animation {
+  val DefaultInterval = 50L
 }
