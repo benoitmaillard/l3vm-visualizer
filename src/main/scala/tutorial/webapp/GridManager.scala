@@ -8,6 +8,7 @@ class GridManager(
     squareWidth: Int
 ) {
   val ctx = canvas.getContext("2d").asInstanceOf[dom.CanvasRenderingContext2D]
+  val gridRect = GridRectangle(0, 0, memRep.height, memRep.width)
 
   def setup() = {
     // TODO include space for margins (for drawing region boundaries)
@@ -32,14 +33,14 @@ class GridManager(
   private def clear(): Unit = ctx.clearRect(0, 0, canvas.width, canvas.height)
 
   private def drawWord(address: Int, color: GridManager.Color): Unit = {
-    val (row, col) = memRep.addressToSquare(address)
-    drawSquare(row, col, color)
+    val square = memRep.addressToSquare(address)
+    drawSquare(square, color)
   }
 
-  private def drawSquare(row: Int, col: Int, color: GridManager.Color): Unit = {
-    ctx.clearRect(squareWidth * col, squareWidth * row, squareWidth, squareWidth)
+  private def drawSquare(s: GridSquare, color: GridManager.Color): Unit = {
+    ctx.clearRect(squareWidth * s.col, squareWidth * s.row, squareWidth, squareWidth)
     ctx.fillStyle = f"rgba(${color.r}, ${color.g}, ${color.b}, ${color.a})"
-    ctx.fillRect(squareWidth * col, squareWidth * row, squareWidth, squareWidth)
+    ctx.fillRect(squareWidth * s.col, squareWidth * s.row, squareWidth, squareWidth)
   }
 }
 
