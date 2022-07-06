@@ -25,3 +25,18 @@ enum Orientation(val rowDiff: Int, val colDiff: Int):
   case SouthWest extends Orientation(1, -1)
   case West extends Orientation(0, -1)
   case NorthWest extends Orientation(-1, -1)
+
+case class Color(r: Int, g: Int, b: Int, a: Float)
+
+object Color {
+  def range(from: Color, to: Color, n: Int): Seq[Color] = 
+    (0 until n).map {i =>
+      val factor = i.toFloat / (n-1)
+      Color(
+        (from.r + (to.r - from.r) * factor).toInt,
+        (from.g + (to.g - from.g) * factor).toInt,
+        (from.b + (to.b - from.b) * factor).toInt,
+        from.a + (to.a - from.a) * factor
+      )
+    }
+}
