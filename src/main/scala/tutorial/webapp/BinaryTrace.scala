@@ -51,7 +51,7 @@ case class BinaryTrace(url: String) extends ProgramTrace {
     val first = chunkSize * i * nBytes
     val last = first + chunkSize * nBytes - 1
     Http.fetchBinary(url, first, last).map { a =>
-      println(a.toSeq.toString)
+      //println(a.toSeq.toString)
 
       chunkMap(i) = a
       a
