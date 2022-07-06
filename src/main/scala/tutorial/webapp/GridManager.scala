@@ -37,6 +37,7 @@ class GridManager(
   }
 
   private def drawSquare(row: Int, col: Int, color: GridManager.Color): Unit = {
+    ctx.clearRect(squareWidth * col, squareWidth * row, squareWidth, squareWidth)
     ctx.fillStyle = f"rgba(${color.r}, ${color.g}, ${color.b}, ${color.a})"
     ctx.fillRect(squareWidth * col, squareWidth * row, squareWidth, squareWidth)
   }
