@@ -18,6 +18,10 @@ case class GridSquare(row: Int, col: Int) {
 
 enum Orientation(val rowDiff: Int, val colDiff: Int):
   case North extends Orientation(-1, 0)
+  case NorthEast extends Orientation(-1, 1)
   case East extends Orientation(0, 1)
+  case SouthEast extends Orientation(1, 1)
   case South extends Orientation(1, 0)
+  case SouthWest extends Orientation(1, -1)
   case West extends Orientation(0, -1)
+  case NorthWest extends Orientation(-1, -1)
