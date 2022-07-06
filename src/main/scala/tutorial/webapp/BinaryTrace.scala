@@ -23,15 +23,12 @@ case class BinaryTrace(url: String) extends ProgramTrace {
       length: Int,
       forward: Boolean = true
   ): Future[Seq[TraceEvent]] = {
-    val requiredChunks = ((from - length + 1) / chunkSize) to (from / chunkSize)
-    // println(requiredChunks.toList)
+    val requiredChunks = (((from - length + 1) / chunkSize) to (from / chunkSize)).filter(_ >= 0)
     val futures = requiredChunks.map(fetchChunkIfNecessary)
     Future.sequence(futures).map { arrays =>
-      val start = from - ((from - length + 1) / chunkSize) * chunkSize
+      val start = from - requiredChunks(0) * chunkSize
       val joinedSeq = arrays.flatten.grouped(nBytes).slice((start - length + 1), start + 1).toSeq
-      val res = joinedSeq.map(extractEvent).toSeq.reverse
-     
-      res
+      joinedSeq.map(extractEvent).toSeq.reverse
     }
   }
 
