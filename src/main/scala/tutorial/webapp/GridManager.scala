@@ -5,10 +5,13 @@ import org.scalajs.dom
 class GridManager(
     canvas: dom.html.Canvas,
     memRep: SpatialMemoryRepresentation,
-    squareWidth: Int
+    squareWidth: Int,
+    metaData: MemoryMetaData
 ) {
   val ctx = canvas.getContext("2d").asInstanceOf[dom.CanvasRenderingContext2D]
   val gridRect = GridRectangle(0, 0, memRep.height, memRep.width)
+  val boundaries = metaData.regions.map(r => computeBoundaries(r.range))
+  val colors = Color.range(GridManager.RegionPaletteFrom, GridManager.RegionPaletteTo, boundaries.length)
 
   def setup() = {
     // TODO include space for margins (for drawing region boundaries)
@@ -19,6 +22,7 @@ class GridManager(
   def processEventSeq(s: Seq[TraceEvent]): Unit = {
     clear()
     s.zipWithIndex.foreach(processEvent)
+    (boundaries zip colors).foreach(drawBoundaries(_, _))
   }
 
   private def processEvent(e: TraceEvent, pos: Int): Unit = e match {
@@ -32,20 +36,32 @@ class GridManager(
 
   private def clear(): Unit = ctx.clearRect(0, 0, canvas.width, canvas.height)
 
-  private def drawWord(address: Int, color: GridManager.Color): Unit = {
+  private def drawWord(address: Int, color: Color): Unit = {
     val square = memRep.addressToSquare(address)
     drawSquare(square, color)
   }
 
-  private def drawSquare(s: GridSquare, color: GridManager.Color): Unit = {
+  private def drawSquare(s: GridSquare, color: Color): Unit = {
     ctx.clearRect(squareWidth * s.col, squareWidth * s.row, squareWidth, squareWidth)
     ctx.fillStyle = f"rgba(${color.r}, ${color.g}, ${color.b}, ${color.a})"
     ctx.fillRect(squareWidth * s.col, squareWidth * s.row, squareWidth, squareWidth)
   }
+
+  private def drawBoundaries(boundaries: Seq[(GridSquare, Orientation)], c: Color) =
+    boundaries.foreach((s, o) => drawSquare(s, c))
+
+  private def computeBoundaries(r: Range): Seq[(GridSquare, Orientation)] = {
+    val rangeSquares = r.map(memRep.addressToSquare)
+    for (
+      s <- rangeSquares;
+      (adj, or) <- s.allAdjacent if !gridRect.contains(adj) || !r.contains(memRep.squareToAddress(adj))
+    ) yield (s, or)
+  }
 }
 
 object GridManager {
-  case class Color(r: Int, g: Int, b: Int, a: Float)
   val ReadColor = Color(0, 0, 255, 1.0)
   val WriteColor = Color(0, 255, 0, 1.0)
+  val RegionPaletteFrom = Color(249, 200, 14, 1.0)
+  val RegionPaletteTo = Color(102, 46, 155, 1.0)
 }
