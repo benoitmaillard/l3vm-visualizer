@@ -10,7 +10,7 @@ class ScanMemoryRepresentation(width: Int, height: Int)
   override def addressToSquare(address: Int): (Int, Int) = {
     val row = address / width
     val posInRow = address % width
-    val col = if row % 2 == 0 then posInRow else width - posInRow
+    val col = if row % 2 == 0 then posInRow else width - 1 - posInRow
     (row, col)
   }
   override def squareToAddress(row: Int, col: Int): Int = {
