@@ -3,6 +3,10 @@ package tutorial.webapp
 import org.scalajs.dom
 
 abstract class CanvasPainter(val canvas: dom.html.Canvas) {
+  def resize(width: Int, height: Int): Unit = {
+    canvas.width = width
+    canvas.height = height
+  }
   def drawRect(x: Int, y: Int, w: Int, h: Int, color: Color): Unit
   def refresh(): Unit
 }
@@ -34,7 +38,12 @@ class ArrayPainter(canvas: dom.html.Canvas) extends CanvasPainter(canvas) {
   val ctx = canvas.getContext("2d").asInstanceOf[dom.CanvasRenderingContext2D]
   var imagedata = ctx.createImageData(canvas.width, canvas.height);
 
-  override def drawRect(x: Int, y: Int, w: Int, h: Int, c: Color): Unit = {  
+  override def resize(width: Int, height: Int): Unit = {
+    super.resize(width, height)
+    imagedata = ctx.createImageData(canvas.width, canvas.height)
+  }
+
+  override def drawRect(x: Int, y: Int, w: Int, h: Int, c: Color): Unit = {
     for (i <- 0 until h) {
       for (j <- 0 until w) {
         imagedata.data((i+y) * canvas.width * 4 + (j+x) * 4) = c.r

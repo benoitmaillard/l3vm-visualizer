@@ -11,8 +11,9 @@ class GridManager(
   val gridRect = GridRectangle(0, 0, memRep.height, memRep.width)
   val boundaries = metaData.regions.map(r => computeBoundaries(r.range))
   val colors = Color.range(GridManager.RegionPaletteFrom, GridManager.RegionPaletteTo, boundaries.length)
-  painter.canvas.width = memRep.width * squareWidth
-  painter.canvas.height = memRep.height * squareWidth
+  painter.resize(memRep.width * squareWidth, memRep.height * squareWidth)
+  (boundaries zip colors).foreach(drawBoundaries(_, _))
+  painter.refresh()
 
   def processEventSeq(s: Seq[TraceEvent]): Unit = {
     s.zipWithIndex.foreach(processEvent)
