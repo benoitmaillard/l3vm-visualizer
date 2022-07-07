@@ -8,6 +8,7 @@ class GridManager(
     squareWidth: Int,
     metaData: MemoryMetaData
 ) {
+  val boundaryWidth = 2
   val gridRect = GridRectangle(0, 0, memRep.height, memRep.width)
   val boundaries = metaData.regions.map(r => computeBoundaries(r.range))
   val colors = Color.range(GridManager.RegionPaletteFrom, GridManager.RegionPaletteTo, boundaries.length)
@@ -40,7 +41,15 @@ class GridManager(
   }
 
   private def drawBoundaries(boundaries: Seq[(GridSquare, Orientation)], c: Color) =
-    boundaries.foreach((s, o) => drawSquare(s, c))
+    boundaries.foreach((s, o) => drawSingleBoundary(s, o, c))
+
+  private def drawSingleBoundary(s: GridSquare, o: Orientation, c: Color) = {
+    val w = if o.colDiff == 0 then squareWidth else boundaryWidth
+    val h = if o.rowDiff == 0 then squareWidth else boundaryWidth
+    val x = if o.colDiff == 1 then (s.col+1) * squareWidth - boundaryWidth else s.col * squareWidth
+    val y = if o.rowDiff == 1 then (s.row+1) * squareWidth - boundaryWidth else s.row * squareWidth
+    painter.drawRect(x, y, w, h, c)
+  }
 
   private def computeBoundaries(r: Range): Seq[(GridSquare, Orientation)] = {
     val rangeSquares = r.map(memRep.addressToSquare)
