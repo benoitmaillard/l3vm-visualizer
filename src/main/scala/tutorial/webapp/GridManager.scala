@@ -3,26 +3,21 @@ package tutorial.webapp
 import org.scalajs.dom
 
 class GridManager(
-    canvas: dom.html.Canvas,
+    painter: CanvasPainter,
     memRep: SpatialMemoryRepresentation,
     squareWidth: Int,
     metaData: MemoryMetaData
 ) {
-  val ctx = canvas.getContext("2d").asInstanceOf[dom.CanvasRenderingContext2D]
   val gridRect = GridRectangle(0, 0, memRep.height, memRep.width)
   val boundaries = metaData.regions.map(r => computeBoundaries(r.range))
   val colors = Color.range(GridManager.RegionPaletteFrom, GridManager.RegionPaletteTo, boundaries.length)
-
-  def setup() = {
-    // TODO include space for margins (for drawing region boundaries)
-    canvas.width = memRep.width * squareWidth
-    canvas.height = memRep.height * squareWidth
-  }
+  painter.canvas.width = memRep.width * squareWidth
+  painter.canvas.height = memRep.height * squareWidth
 
   def processEventSeq(s: Seq[TraceEvent]): Unit = {
-    clear()
     s.zipWithIndex.foreach(processEvent)
     (boundaries zip colors).foreach(drawBoundaries(_, _))
+    painter.refresh()
   }
 
   private def processEvent(e: TraceEvent, pos: Int): Unit = e match {
@@ -34,17 +29,13 @@ class GridManager(
 
   private def alphaAt(pos: Int) = 1.0f / (pos+1)
 
-  private def clear(): Unit = ctx.clearRect(0, 0, canvas.width, canvas.height)
-
   private def drawWord(address: Int, color: Color): Unit = {
     val square = memRep.addressToSquare(address)
     drawSquare(square, color)
   }
 
   private def drawSquare(s: GridSquare, color: Color): Unit = {
-    ctx.clearRect(squareWidth * s.col, squareWidth * s.row, squareWidth, squareWidth)
-    ctx.fillStyle = f"rgba(${color.r}, ${color.g}, ${color.b}, ${color.a})"
-    ctx.fillRect(squareWidth * s.col, squareWidth * s.row, squareWidth, squareWidth)
+    painter.drawRect(squareWidth * s.col, squareWidth * s.row, squareWidth, squareWidth, color)
   }
 
   private def drawBoundaries(boundaries: Seq[(GridSquare, Orientation)], c: Color) =
