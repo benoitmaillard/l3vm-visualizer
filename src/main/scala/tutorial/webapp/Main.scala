@@ -32,11 +32,23 @@ object TutorialApp {
 
   def main(args: Array[String]): Unit = {    
     val trace = BinaryTrace("./resources/trace.bin")
-    val memRep = ScanMemoryRepresentation(width, height)
-    val grid = GridManager(canvas, memRep, squareWidth)
-    grid.setup()
 
     trace.length().foreach { l =>
+      val memRep = ScanMemoryRepresentation(width, height)
+      val regions = Seq(
+        MemoryRegion(0 until 1000, "Code"),
+        MemoryRegion(1000 until 5000, "Test"),
+        MemoryRegion(5000 until 6500, "Test2"),
+        MemoryRegion(5000 until 6500, "Test2"),
+        MemoryRegion(6500 until 8000, "Test2"),
+        MemoryRegion(8000 until 9080, "Test2"),
+        MemoryRegion(9080 until 11000, "Test2"),
+
+      )
+      val metaData = MemoryMetaData(regions, l)
+      // val painter = ShapePainter(canvas)
+      val painter = ArrayPainter(canvas)
+      val grid = GridManager(painter, memRep, squareWidth, metaData)
       
       val animation = Animation(refresh(trace, grid), l)
       document.getElementById("range").setAttribute("max", l.toString)
