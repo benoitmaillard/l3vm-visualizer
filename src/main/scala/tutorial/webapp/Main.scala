@@ -24,9 +24,9 @@ import org.scalajs.dom.Event
 
 object TutorialApp {
   val squareWidth = 5
-  val width = 200
-  val height = 400
-  val last = 50
+  val width = 0x100
+  val memSize = 0x10000
+  val last = 3
   val canvas = document.getElementById("canvas").asInstanceOf[html.Canvas]
   val ctx = canvas.getContext("2d").asInstanceOf[dom.CanvasRenderingContext2D]
 
@@ -34,20 +34,16 @@ object TutorialApp {
     val trace = BinaryTrace("./resources/trace.bin")
 
     trace.length().foreach { l =>
-      val memRep = ScanMemoryRepresentation(width, height)
+      val memRep = ScanMemoryRepresentation(width, math.ceil(memSize.toDouble / width).toInt)
       val regions = Seq(
-        MemoryRegion(0 until 1000, "Code"),
-        MemoryRegion(1000 until 5000, "Test"),
-        MemoryRegion(5000 until 6500, "Test2"),
-        MemoryRegion(5000 until 6500, "Test2"),
-        MemoryRegion(6500 until 8000, "Test2"),
-        MemoryRegion(8000 until 9080, "Test2"),
-        MemoryRegion(9080 until 11000, "Test2"),
-
+        MemoryRegion(0 until 572, "Code"),
+        MemoryRegion(572 until 1090, "Top-frame"),
+        MemoryRegion(1090 until 8633, "Bitmap"),
+        MemoryRegion(8633 until 250000, "Heap"),
       )
-      val metaData = MemoryMetaData(regions, l)
+      val metaData = MemoryMetaData(regions, memSize)
       // val painter = ShapePainter(canvas)
-      val painter = ArrayPainter(canvas)
+      val painter = ArrayPainter(canvas, 2)
       val grid = GridManager(painter, memRep, squareWidth, metaData)
       
       val animation = Animation(refresh(trace, grid), l)
