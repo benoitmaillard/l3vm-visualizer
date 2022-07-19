@@ -25,9 +25,9 @@ case class TextTrace(url: String) extends ProgramTrace {
         })
     else Future { content }
 
-  def read(at: Int, last: Int, forward: Boolean): Future[Seq[TraceEvent]] =
-    fetchIfRequired().map(c => c.slice(at - last + 1, at + 1).reverse)
+  def read(at: Long, last: Int, forward: Boolean): Future[Seq[TraceEvent]] =
+    fetchIfRequired().map(c => c.slice(at.toInt - last + 1, at.toInt + 1).reverse)
 
-  def length(): Future[Int] =
+  def length(): Future[Long] =
     fetchIfRequired().map(c => c.length)
 }

@@ -5,24 +5,58 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Promise
 import scala.scalajs.js
 
-class Animation(action: Int => Future[Unit], max: Int) {
+class Animation(action: Long => Future[Unit], max: Long) {
   private var running = false
-  private var reversed = false
-  private var interval = Animation.DefaultInterval
-  private var state = 0
+  private var increment = Animation.DefaultIncrement
+  private var state = 0L
+
+  def toggle(): Unit =
+    running = !running
+    if running then next()
+
+  def move(diff: Long): Unit = set(mappedState + diff)
+
+  def reset(): Unit = {
+    increment = Animation.DefaultIncrement
+    running = false
+    setInternal(0)
+  }
+
+  def set(at: Long): Unit =
+    setInternal(at * Animation.ResultInterval)
+
+  def decelerate() = setIncrement(increment / 2)
+
+  def accelerate() = setIncrement(increment * 2)
+
+  def reverse() =
+    increment = - increment
+
+  def isRunning(): Boolean = running
+
+  private def mappedState = state / Animation.ResultInterval
+
+  private def setInternal(at: Long): Unit = {
+    state = at
+    if !running then action(mappedState)
+  }
+
+  private def setIncrement(newInc: Int): Unit =
+    if newInc > Animation.MinIncrement && newInc < Animation.MaxIncrement then
+      increment = newInc
 
   private def next(): Future[Unit] =
     val t = System.currentTimeMillis()
-    if running && state >= 0 && state < max then
-      action(state).flatMap { _ =>
-        state += (if reversed then -1 else 1)
+    if running then
+      action(mappedState).flatMap { _ =>
+        state += increment
         
-        if (state < 0 || state >= max) {
+        if (mappedState < 0 || mappedState >= max) {
           reset()
         }
 
         val elapsed = System.currentTimeMillis() - t
-        val remaining = interval - elapsed
+        val remaining = Animation.FrameInterval - elapsed
         if remaining > 0 then delay(remaining).flatMap(_ => next())
         else next()
       }
@@ -35,37 +69,12 @@ class Animation(action: Int => Future[Unit], max: Int) {
     }
     p.future
   }
-
-  def toggle(): Unit =
-    running = !running
-    if running then next()
-
-  def move(diff: Int): Unit = set(state + diff)
-
-  def reset(): Unit = {
-    interval = Animation.DefaultInterval
-    running = false
-    reversed = false
-    set(0)
-  }
-
-  def set(at: Int): Unit = {
-    state = at
-    if !running then action(state)
-  }
-
-  def setInterval(newInterval: Long): Unit = {
-    interval = newInterval
-  }
-
-  def reverse(): Unit =
-    reversed = !reversed
-
-  def isRunning(): Boolean = running
-
-  def getInterval(): Long = interval
 }
 
 object Animation {
-  val DefaultInterval = 50L
+  val DefaultIncrement = 0x10
+  val MinIncrement = 1
+  val MaxIncrement = 0x1000000
+  val ResultInterval = 64
+  val FrameInterval = 16L // time in milliseconds between each iteration
 }

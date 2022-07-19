@@ -18,7 +18,7 @@ object Http {
       .flatMap(b => b.arrayBuffer())
       .map(b => new Uint8Array(b).toArray)
 
-  def fetchBinary(url: String, from: Int, to: Int): Future[Array[Short]] =
+  def fetchBinary(url: String, from: Long, to: Long): Future[Array[Short]] =
     val h = new dom.Headers()
     h.set("Range", f"bytes=$from-$to")
     dom
