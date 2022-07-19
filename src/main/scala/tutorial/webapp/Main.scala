@@ -23,10 +23,10 @@ import scala.concurrent.Promise
 import org.scalajs.dom.Event
 
 object TutorialApp {
-  val squareWidth = 5
+  val squareWidth = 3
   val width = 0x100
   val memSize = 0x10000
-  val last = 3
+  val last = 100
   val canvas = document.getElementById("canvas").asInstanceOf[html.Canvas]
   val ctx = canvas.getContext("2d").asInstanceOf[dom.CanvasRenderingContext2D]
 
@@ -61,8 +61,8 @@ object TutorialApp {
       buttonListener("reset", e => animation.reset())
       buttonListener("prev", e => animation.move(-1))
       buttonListener("next", e => animation.move(1))
-      buttonListener("faster", e => animation.setInterval(animation.getInterval() * 2))
-      buttonListener("slower", e => animation.setInterval(animation.getInterval() / 2))
+      buttonListener("faster", e => animation.accelerate())
+      buttonListener("slower", e => animation.decelerate())
       buttonListener("reverse", e => animation.reverse())
     }
 
@@ -71,7 +71,7 @@ object TutorialApp {
   def buttonListener(id: String, action: Event => Unit) =
     document.getElementById(id).asInstanceOf[html.Button].addEventListener("click", action)
 
-  def refresh(trace: ProgramTrace, grid: GridManager)(i: Int): Future[Unit] = {
+  def refresh(trace: ProgramTrace, grid: GridManager)(i: Long): Future[Unit] = {
     trace.read(i, last).map { s =>
       document.getElementById("range").asInstanceOf[html.Input].value = i.toString
       grid.processEventSeq(s)

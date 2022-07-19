@@ -12,6 +12,9 @@
       outline: none;
       box-shadow: none;
     }
+    canvas {
+      background-color: black;
+    }
   </style>
 </head>
 
@@ -23,8 +26,8 @@
         <button id="reset" title="Reset animation" type="button" class="btn btn-info bi-arrow-counterclockwise"></button>
         <button id="prev" title="Go to next step" type="button" class="btn btn-info bi-arrow-left"></button>
         <button id="next" title="Go to previous step" type="button" class="btn btn-info bi-arrow-right"></button>
-        <button id="faster" title="Make the animation faster" type="button" class="btn btn-info bi-skip-backward"></button>
-        <button id="slower" title="Make the animation slower" type="button" class="btn btn-info bi-skip-forward"></button>
+        <button id="slower" title="Make the animation slower" type="button" class="btn btn-info bi-skip-backward"></button>
+        <button id="faster" title="Make the animation faster" type="button" class="btn btn-info bi-skip-forward"></button>
         <button id="reverse" title="Reverse the animation" type="button" class="btn btn-info bi-arrow-left-right"></button>
         <input id="range" type="range" class="form-range" min="0" max="5" step="1">
         <canvas id="canvas"></canvas>
