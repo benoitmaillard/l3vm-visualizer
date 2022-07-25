@@ -1,4 +1,4 @@
-package tutorial.webapp
+package visualizer.webapp
 
 import org.scalajs.dom
 import org.scalajs.dom.document
@@ -22,7 +22,7 @@ import scala.concurrent.Future
 import scala.concurrent.Promise
 import org.scalajs.dom.Event
 
-object TutorialApp {
+object VisualizerApp {
   val squareWidth = 3
   val width = 0x100
   val memSize = 0x10000

@@ -1,4 +1,4 @@
-package tutorial.webapp
+package visualizer.webapp
 
 import scala.scalajs.js
 import org.scalajs.dom

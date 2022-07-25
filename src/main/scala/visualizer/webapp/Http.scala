@@ -1,4 +1,4 @@
-package tutorial.webapp
+package visualizer.webapp
 
 import org.scalajs.dom
 import org.scalajs.dom.Blob

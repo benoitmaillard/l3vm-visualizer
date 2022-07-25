@@ -1,4 +1,4 @@
-package tutorial.webapp
+package visualizer.webapp
 
 case class GridRectangle(minRow: Int, minCol: Int, height: Int, width: Int) {
   def contains(square: GridSquare) =

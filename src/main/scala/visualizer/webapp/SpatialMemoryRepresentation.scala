@@ -1,4 +1,4 @@
-package tutorial.webapp
+package visualizer.webapp
 
 abstract class SpatialMemoryRepresentation(val width: Int, val height: Int) {
   def addressToSquare(address: Int): GridSquare
