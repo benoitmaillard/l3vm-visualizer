@@ -58,7 +58,7 @@ class Animation(action: Long => Future[Unit], max: Long) {
         val elapsed = System.currentTimeMillis() - t
         val remaining = Animation.FrameInterval - elapsed
         if remaining > 0 then delay(remaining).flatMap(_ => next())
-        else next()
+        else delay(1).flatMap(_ => next())
       }
     else Future {}
 
