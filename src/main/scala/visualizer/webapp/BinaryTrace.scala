@@ -14,46 +14,29 @@ import scala.scalajs.js.typedarray._
 import js.JSConverters._
 
 case class BinaryTrace(url: String) extends ProgramTrace {
-  val chunkSize = 20000
-  val nBytes = 3
-  val chunkMap: mutable.Map[Long, Array[Short]] = mutable.Map()
+  private val file = new ChunkedFile(url)
 
   def read(
       from: Long,
       length: Int,
       forward: Boolean = true
   ): Future[Seq[TraceEvent]] = {
-    val requiredChunks = (((from - length + 1) / chunkSize) to (from / chunkSize)).filter(_ >= 0)
-    val futures = requiredChunks.map(fetchChunkIfNecessary)
-    Future.sequence(futures).map { arrays =>
-      val start = (from - requiredChunks(0) * chunkSize).toInt
-      val joinedSeq = arrays.flatten.grouped(nBytes).slice((start - length + 1), start + 1).toSeq
-      joinedSeq.map(extractEvent).toSeq.reverse
-    }
+    val bytes = file.read((from - length + 1) * BinaryTrace.EventBytes, length * BinaryTrace.EventBytes)
+    bytes.map(_.grouped(BinaryTrace.EventBytes).map(extractEvent).toSeq.reverse)
   }
 
-  def length(): Future[Long] =
-    Http.fetchHead(url).map(h => h.get("content-length").toInt / nBytes)
+  def length(): Future[Long] = file.length().map(_ / BinaryTrace.EventBytes)
 
   private def extractEvent(s: Seq[Short]) =
-   
-    val address = (s(1) << 8) |  s(2)
+    val clockBit = s(0) & (1 << 7)
+    val address = (s(1) << 8) | s(2)
 
     s(0) match {
       case 0 => MemoryRead(address)
       case 1 => MemoryWrite(address)
     }
+}
 
-  private def fetchChunkIfNecessary(i: Long): Future[Array[Short]] =
-    chunkMap.get(i).map(c => Future {c}).getOrElse(fetchChunk(i))
-
-  private def fetchChunk(i: Long): Future[Array[Short]] =
-    val first = chunkSize * i * nBytes
-    val last = first + chunkSize * nBytes - 1
-    Http.fetchBinary(url, first, last).map { a =>
-      //println(a.toSeq.toString)
-
-      chunkMap(i) = a
-      a
-    }
+object BinaryTrace {
+  val EventBytes = 3
 }
