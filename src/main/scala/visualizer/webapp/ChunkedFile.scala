@@ -3,6 +3,7 @@ package visualizer.webapp
 import scala.collection.mutable
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.collection.View
 
 class ChunkedFile(url: String) {
   private val chunkMap: mutable.Map[Long, Array[Short]] = mutable.Map()
@@ -12,7 +13,7 @@ class ChunkedFile(url: String) {
     val futures = requiredChunks.map(fetchChunkIfNecessary)
     Future.sequence(futures).map { arrays =>
       val start = (from - requiredChunks(0) * ChunkedFile.ChunkSize).toInt
-      val joinedSeq = arrays.flatten.slice(start, start + length).toSeq
+      val joinedSeq = arrays.view.flatten.slice(start, start + length).toSeq
       joinedSeq.toSeq
     }
   }
