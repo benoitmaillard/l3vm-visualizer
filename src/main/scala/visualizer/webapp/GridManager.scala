@@ -16,8 +16,8 @@ class GridManager(
   (boundaries zip colors).foreach(drawBoundaries)
   painter.refresh(1)
 
-  def processEventSeq(s: Seq[TraceEvent]): Unit = {
-    s.zipWithIndex.foreach(processEvent)
+  def processEventSeq(s: Seq[Seq[TraceEvent]]): Unit = {
+    s.zipWithIndex.foreach((c, i) => c.foreach(processEvent(_, i)))
     painter.refresh(0)
   }
 
@@ -60,8 +60,8 @@ class GridManager(
 }
 
 object GridManager {
-  val ReadColor = Color(0, 0, 255, 1.0)
-  val WriteColor = Color(0, 255, 0, 1.0)
+  val ReadColor = Color(0, 255, 0, 1.0)
+  val WriteColor = Color(255, 0, 0, 1.0)
   val RegionPaletteFrom = Color(249, 200, 14, 1.0)
   val RegionPaletteTo = Color(102, 46, 155, 1.0)
 }
