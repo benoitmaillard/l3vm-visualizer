@@ -26,12 +26,12 @@ object VisualizerApp {
   val squareWidth = 3
   val width = 0x100
   val memSize = 0x10000
-  val last = 100
+  val last = 10
   val canvas = document.getElementById("canvas").asInstanceOf[html.Canvas]
   val ctx = canvas.getContext("2d").asInstanceOf[dom.CanvasRenderingContext2D]
 
   def main(args: Array[String]): Unit = {    
-    val trace = BinaryTrace("./resources/trace.bin")
+    val trace = BinaryTrace("./resources/trace.bin", "./resources/index.bin")
 
     trace.length().foreach { l =>
       val memRep = ScanMemoryRepresentation(width, math.ceil(memSize.toDouble / width).toInt)
