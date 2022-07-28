@@ -17,7 +17,7 @@ class GridManager(
   painter.refresh(1)
 
   def processEventSeq(s: Seq[Seq[TraceEvent]]): Unit = {
-    s.zipWithIndex.foreach((c, i) => c.foreach(processEvent(_, i)))
+    s.zipWithIndex.reverse.foreach((c, i) => c.foreach(processEvent(_, i)))
     painter.refresh(0)
   }
 
