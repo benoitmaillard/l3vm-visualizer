@@ -23,7 +23,7 @@ case class BinaryTrace(url: String, clockUrl: String) extends ProgramTrace {
       forward: Boolean = true
   ): Future[Seq[Seq[TraceEvent]]] = {
     val t = System.currentTimeMillis()
-    val clockFirst = (from - length) * BinaryTrace.IndexEntryBytes
+    val clockFirst = math.max(0, (from - length) * BinaryTrace.IndexEntryBytes)
     val clockLength = (length+1) * BinaryTrace.IndexEntryBytes
     clockFile.read(clockFirst, clockLength).flatMap { bytes =>
       val indexes = bytes.grouped(BinaryTrace.IndexEntryBytes).map(extractIndex).toSeq
