@@ -6,7 +6,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.collection.View
 
 class ChunkedFile(url: String) {
-  private val chunkMap: mutable.Map[Long, Array[Short]] = mutable.Map()
+  private val chunkMap: mutable.Map[Long, Future[Array[Short]]] = mutable.Map()
 
   def read(from: Long, n: Int): Future[Iterator[Short]] = {
     val requiredChunks = ((from / ChunkedFile.ChunkSize) to ((from + n - 1) / ChunkedFile.ChunkSize)).filter(_ >= 0)
@@ -30,15 +30,15 @@ class ChunkedFile(url: String) {
     Http.fetchHead(url).map(h => h.get("content-length").toInt)
 
   private def fetchChunkIfNecessary(i: Long): Future[Array[Short]] =
-    chunkMap.get(i).map(c => Future {c}).getOrElse(fetchChunk(i))
+    chunkMap.get(i).getOrElse(fetchChunk(i))
 
   private def fetchChunk(i: Long): Future[Array[Short]] =
     val first = ChunkedFile.ChunkSize * i
     val last = first + ChunkedFile.ChunkSize - 1
-    Http.fetchBinary(url, first, last).map { a =>
-      chunkMap(i) = a
-      a
-    }
+    println("fetch!")
+    val future = Http.fetchBinary(url, first, last)
+    chunkMap(i) = future
+    future
 }
 
 object ChunkedFile {
