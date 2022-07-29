@@ -10,6 +10,9 @@ class Animation(action: Long => Future[Unit], max: Long) {
   private var increment = Animation.DefaultIncrement
   private var state = 0L
 
+  // Display initial state
+  action(mappedState)
+
   def toggle(): Unit =
     running = !running
     if running then next()
@@ -38,6 +41,9 @@ class Animation(action: Long => Future[Unit], max: Long) {
 
   private def setInternal(at: Long): Unit = {
     state = at
+    if (mappedState < 0 || mappedState >= max) {
+      reset()
+    }
     if !running then action(mappedState)
   }
 
@@ -49,12 +55,8 @@ class Animation(action: Long => Future[Unit], max: Long) {
     val t = System.currentTimeMillis()
     if running then
       action(mappedState).flatMap { _ =>
-        state += increment
+        setInternal(state + increment)
         
-        if (mappedState < 0 || mappedState >= max) {
-          reset()
-        }
-
         val elapsed = System.currentTimeMillis() - t
         val remaining = Animation.FrameInterval - elapsed
         if remaining > 0 then delay(remaining).flatMap(_ => next())
