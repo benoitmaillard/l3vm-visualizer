@@ -8,21 +8,23 @@ import scala.collection.View
 class ChunkedFile(url: String) {
   private val chunkMap: mutable.Map[Long, Future[Array[Short]]] = mutable.Map()
 
-  def read(from: Long, n: Int): Future[Iterator[Short]] = {
-    val requiredChunks = ((from / ChunkedFile.ChunkSize) to ((from + n - 1) / ChunkedFile.ChunkSize)).filter(_ >= 0)
+  def read(from: Long, n: Int, groupSize: Int): Future[Iterator[Seq[Short]]] = {
+    val fromBytes = from * groupSize
+    val nBytes = n * groupSize 
+    val requiredChunks = ((fromBytes / ChunkedFile.ChunkSize) to ((fromBytes + nBytes - 1) / ChunkedFile.ChunkSize)).filter(_ >= 0)
     val futures = requiredChunks.map(fetchChunkIfNecessary)
     Future.sequence(futures).map { arrays =>
-      val start = (from - requiredChunks(0) * ChunkedFile.ChunkSize).toInt
+      val start = (fromBytes - requiredChunks(0) * ChunkedFile.ChunkSize).toInt
       new Iterator[Short] {
         var i = start
-        def hasNext = i < start + n
+        def hasNext = i < start + nBytes
         def next(): Short = {
           val arrayIndex = i / ChunkedFile.ChunkSize
           val internalIndex = i % ChunkedFile.ChunkSize
           i += 1
           arrays(arrayIndex)(internalIndex)
         }
-      }
+      }.grouped(groupSize)
     }
   }
 

@@ -16,11 +16,11 @@ import js.JSConverters._
 class TraceIndex(clockUrl: String) {
   private val file = new ChunkedFile(clockUrl)
 
-  def read(from: Long, length: Int): Future[Iterator[(Int, Int)]] = {
+  def readLast(from: Long, length: Int): Future[Iterator[(Int, Int)]] = {
     val rangeStart = if from > 0 then from - 1 else 0
     val rangeLength = if from > 0 then length + 1 else length
-    file.read(rangeStart * TraceIndex.EntryBytes, rangeLength * TraceIndex.EntryBytes) map { bytes =>
-      val extracted = bytes.grouped(TraceIndex.EntryBytes).map(extractIndex)
+    file.read(rangeStart, rangeLength, TraceIndex.EntryBytes) map { bytes =>
+      val extracted = bytes.map(extractIndex)
       val complete = if from > 0 then extracted else Iterator(0) ++ extracted
       complete.sliding(2).withPartial(false).map(a => (a(0), a(1)))
     }
@@ -47,8 +47,8 @@ case class BinaryTrace(url: String, clockUrl: String) extends ProgramTrace {
   ): Future[Seq[Seq[TraceEvent]]] = {
     val tMin = math.max(0, from - length + 1)
     val tLength = math.min(from + 1, length).toInt
-    clockFile.read(tMin, tLength).flatMap { ranges =>
-      val futures = ranges.map((from, to) => file.read(from * BinaryTrace.EventBytes, (to - from) * BinaryTrace.EventBytes).map(s => s.grouped(BinaryTrace.EventBytes).map(extractEvent).toSeq))
+    clockFile.readLast(tMin, tLength).flatMap { ranges =>
+      val futures = ranges.map((from, to) => file.read(from, (to - from), BinaryTrace.EventBytes).map(s => s.map(extractEvent).toSeq))
       Future.sequence(futures.toSeq.reverse)
     }
   }
