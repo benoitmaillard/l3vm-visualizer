@@ -13,7 +13,7 @@ abstract class CanvasPainter(val canvas: dom.html.Canvas) {
 
 // Draw rectangles using high-level API
 class ShapePainter(canvas: dom.html.Canvas) extends CanvasPainter(canvas) {
-  val ctx = canvas.getContext("2d").asInstanceOf[dom.CanvasRenderingContext2D]
+  val ctx = canvas.getContext("2d", scalajs.js.Dictionary("alpha" -> false)).asInstanceOf[dom.CanvasRenderingContext2D]
   var clearRequired = false
 
   override def drawRect(x: Int, y: Int, w: Int, h: Int, c: Color, layer: Int): Unit = {
