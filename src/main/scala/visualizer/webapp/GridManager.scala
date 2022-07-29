@@ -1,6 +1,7 @@
 package visualizer.webapp
 
 import org.scalajs.dom
+import scala.collection.mutable.HashMap
 
 class GridManager(
     painter: CanvasPainter,
@@ -8,6 +9,8 @@ class GridManager(
     squareWidth: Int,
     metaData: MemoryMetaData
 ) {
+  val counts = HashMap[Int, (Int, Int)]()
+
   val boundaryWidth = 1
   val gridRect = GridRectangle(0, 0, memRep.height, memRep.width)
   painter.resize(memRep.width * squareWidth, memRep.height * squareWidth)
@@ -18,6 +21,24 @@ class GridManager(
 
   def processEventSeq(s: Seq[Seq[TraceEvent]]): Unit = {
     s.zipWithIndex.reverse.foreach((c, i) => c.foreach(processEvent(_, i)))
+    painter.refresh(0)
+  }
+
+  def processBulk(events: Iterator[TraceEvent]): Unit = {
+    counts.clear()
+    events.foreach {
+      case MemoryRead(address) => counts.updateWith(address)(v => Some(v.map((r, w) => (r + 1, w)).getOrElse((1, 0))))
+      case MemoryWrite(address) => counts.updateWith(address)(v => Some(v.map((r, w) => (r, w + 1)).getOrElse((0, 1))))
+    }
+    val maxCount = counts.values.max
+    counts.foreach { case (address, (r, w)) =>
+      // val readRatio = r / maxCount._1
+      // val writeRatio = w / maxCount._2
+      // val total = readRatio + writeRatio
+      // val color = GridManager.ReadColor * (readRatio / total) + GridManager.WriteColor * (writeRatio / total)
+      // drawWord(address, color.copy(a = total))
+      drawWord(address, GridManager.ReadColor)
+    }
     painter.refresh(0)
   }
 

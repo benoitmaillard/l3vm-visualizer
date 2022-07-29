@@ -16,7 +16,7 @@ import js.JSConverters._
 class TraceIndex(clockUrl: String) {
   private val file = new ChunkedFile(clockUrl)
 
-  def readLast(from: Long, length: Int): Future[Iterator[(Int, Int)]] = {
+  def readAll(from: Long, length: Int): Future[Iterator[(Int, Int)]] = {
     val rangeStart = if from > 0 then from - 1 else 0
     val rangeLength = if from > 0 then length + 1 else length
     file.read(rangeStart, rangeLength, TraceIndex.EntryBytes) map { bytes =>
@@ -24,6 +24,13 @@ class TraceIndex(clockUrl: String) {
       val complete = if from > 0 then extracted else Iterator(0) ++ extracted
       complete.sliding(2).withPartial(false).map(a => (a(0), a(1)))
     }
+  }
+
+  def readRange(from: Long, length: Int): Future[(Int, Int)] = {
+    val startFuture = if from == 0 then Future {0} else file.read(from - 1, 1, TraceIndex.EntryBytes).map(c => extractIndex(c.next()))
+    val endFuture = file.read((from + length - 1), 1, TraceIndex.EntryBytes).map(c => extractIndex(c.next()))
+    if from == 0 then endFuture.map(r => (0, r))
+    else (startFuture zip endFuture)
   }
 
   def length(): Future[Long] = file.length().map(_ / TraceIndex.EntryBytes)
@@ -47,9 +54,19 @@ case class BinaryTrace(url: String, clockUrl: String) extends ProgramTrace {
   ): Future[Seq[Seq[TraceEvent]]] = {
     val tMin = math.max(0, from - length + 1)
     val tLength = math.min(from + 1, length).toInt
-    clockFile.readLast(tMin, tLength).flatMap { ranges =>
+    
+    clockFile.readAll(tMin, tLength).flatMap { ranges =>
       val futures = ranges.map((from, to) => file.read(from, (to - from), BinaryTrace.EventBytes).map(s => s.map(extractEvent).toSeq))
       Future.sequence(futures.toSeq.reverse)
+    }
+  }
+
+  def readBulk(from: Long, length: Int): Future[Iterator[TraceEvent]] = {
+    val tMin = math.max(0, from - length + 1)
+    val tLength = math.min(from + 1, length).toInt
+
+    clockFile.readRange(tMin, tLength).flatMap { (from, to) =>
+      file.read(from, (to - from), BinaryTrace.EventBytes).map(s => s.map(extractEvent))
     }
   }
 

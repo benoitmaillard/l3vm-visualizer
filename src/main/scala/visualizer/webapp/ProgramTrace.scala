@@ -23,5 +23,6 @@ trait ProgramTrace {
       last: Int,
       forward: Boolean = true
   ): Future[Seq[Seq[TraceEvent]]]
+  def readBulk(from: Long, length: Int): Future[Iterator[TraceEvent]]
   def length(): Future[Long]
 }
