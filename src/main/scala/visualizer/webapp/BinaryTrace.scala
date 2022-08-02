@@ -73,12 +73,14 @@ case class BinaryTrace(url: String, clockUrl: String) extends ProgramTrace {
   def length() = clockFile.length()
 
   private def extractEvent(s: Seq[Short]) =
-    val clockBit = s(0) & (1 << 7)
-    val address = (s(1) << 8) | s(2)
+    // val clockBit = ((s(0) & 0x80) >>> 7) == 1
+    val argument = (s(1) << 8) | s(2)
 
-    s(0) match {
-      case 0 => MemoryRead(address)
-      case 1 => MemoryWrite(address)
+    s(0) & 0x7F match {
+      case 0 => MemoryRead(argument)
+      case 1 => MemoryWrite(argument)
+      case 2 => PhaseStart(TracePhase.values(argument))
+      case 3 => PhaseEnd(TracePhase.values(argument))
     }
 }
 
