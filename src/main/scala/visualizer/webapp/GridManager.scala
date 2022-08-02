@@ -32,12 +32,13 @@ class GridManager(
     }
     val maxCount = counts.values.max
     counts.foreach { case (address, (r, w)) =>
-      // val readRatio = r / maxCount._1
-      // val writeRatio = w / maxCount._2
-      // val total = readRatio + writeRatio
-      // val color = GridManager.ReadColor * (readRatio / total) + GridManager.WriteColor * (writeRatio / total)
-      // drawWord(address, color.copy(a = total))
-      drawWord(address, GridManager.ReadColor)
+      val readRatio = if maxCount._1 == 0 then 0 else r.toFloat / maxCount._1
+      val writeRatio = if maxCount._2 == 0 then 0 else w.toFloat / maxCount._2
+      val total = readRatio + writeRatio
+      if (total > 0) {
+        val color = GridManager.ReadColor * (readRatio / total) + GridManager.WriteColor * (writeRatio / total)
+        drawWord(address, color.copy(a = 0.5f + 0.5f * total))
+      }
     }
     painter.refresh(0)
   }
@@ -81,8 +82,8 @@ class GridManager(
 }
 
 object GridManager {
-  val ReadColor = Color(0, 255, 0, 1.0)
-  val WriteColor = Color(255, 0, 0, 1.0)
-  val RegionPaletteFrom = Color(249, 200, 14, 1.0)
-  val RegionPaletteTo = Color(102, 46, 155, 1.0)
+  val ReadColor = Color(0.0f, 1.0f, 0.0f, 1.0f)
+  val WriteColor = Color(1.0f, 0.0f, 0.0f, 1.0f)
+  val RegionPaletteFrom = Color(0.97f, 0.78f, 0.05f, 1.0f)
+  val RegionPaletteTo = Color(0.4f, 0.18f, 0.6f, 1.0f)
 }

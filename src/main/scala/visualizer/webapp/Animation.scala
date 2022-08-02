@@ -5,13 +5,13 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Promise
 import scala.scalajs.js
 
-class Animation(action: Long => Future[Unit], max: Long) {
+class Animation(action: (Long, Int) => Future[Unit], max: Long) {
   private var running = false
   private var increment = Animation.DefaultIncrement
   private var state = 0L
 
   // Display initial state
-  action(mappedState)
+  action(mappedState, 0)
 
   def toggle(): Unit =
     running = !running
@@ -44,7 +44,7 @@ class Animation(action: Long => Future[Unit], max: Long) {
     if (mappedState < 0 || mappedState >= max) {
       reset()
     }
-    if !running then action(mappedState)
+    if !running then action(mappedState, increment / Animation.ResultInterval)
   }
 
   private def setIncrement(newInc: Int): Unit =
@@ -54,7 +54,7 @@ class Animation(action: Long => Future[Unit], max: Long) {
   private def next(): Future[Unit] =
     val t = System.currentTimeMillis()
     if running then
-      action(mappedState).flatMap { _ =>
+      action(mappedState, increment / Animation.ResultInterval).flatMap { _ =>
         setInternal(state + increment)
         
         val elapsed = System.currentTimeMillis() - t
