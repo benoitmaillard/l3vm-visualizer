@@ -55,11 +55,11 @@ class ArrayPainter(canvas: dom.html.Canvas, nLayers: Int) extends CanvasPainter(
     
     for (i <- 0 until h) {
       for (j <- 0 until w) {
-        buffer.data((i+y) * canvas.width * 4 + (j+x) * 4) = c.r
-        buffer.data((i+y) * canvas.width * 4 + (j+x) * 4 + 1) = c.g
-        buffer.data((i+y) * canvas.width * 4 + (j+x) * 4 + 2) = c.b
-        buffer.data((i+y) * canvas.width * 4 + (j+x) * 4 + 3) = (c.a * 255).toInt
-        
+        val (r, g, b, a) = c.toIntChannels
+        buffer.data((i+y) * canvas.width * 4 + (j+x) * 4) = r
+        buffer.data((i+y) * canvas.width * 4 + (j+x) * 4 + 1) = g
+        buffer.data((i+y) * canvas.width * 4 + (j+x) * 4 + 2) = b
+        buffer.data((i+y) * canvas.width * 4 + (j+x) * 4 + 3) = a
       }
     }
     paintCount += (System.currentTimeMillis() - start).toInt

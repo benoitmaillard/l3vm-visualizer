@@ -26,11 +26,13 @@ enum Orientation(val rowDiff: Int, val colDiff: Int):
   case West extends Orientation(0, -1)
   case NorthWest extends Orientation(-1, -1)
 
-case class Color(r: Int, g: Int, b: Int, a: Float) {
+case class Color(r: Float, g: Float, b: Float, a: Float) {
   def +(that: Color) = 
     Color(r + that.r, g + that.g, b + that.b, a + that.a)
-  def *(f: Int) =
+  def *(f: Float) =
     Color(f * r, f * g, f * b, f * a)
+  def toIntChannels =
+    ((r * 255).toInt, (g * 255).toInt, (b * 255).toInt, (a * 255).toInt)
 }
 
 object Color {
@@ -38,9 +40,9 @@ object Color {
     (0 until n).map {i =>
       val factor = i.toFloat / (n-1)
       Color(
-        (from.r + (to.r - from.r) * factor).toInt,
-        (from.g + (to.g - from.g) * factor).toInt,
-        (from.b + (to.b - from.b) * factor).toInt,
+        (from.r + (to.r - from.r) * factor),
+        (from.g + (to.g - from.g) * factor),
+        (from.b + (to.b - from.b) * factor),
         from.a + (to.a - from.a) * factor
       )
     }
