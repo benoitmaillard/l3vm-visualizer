@@ -53,16 +53,16 @@ class Animation(action: (Long, Int) => Future[Unit], max: Long) {
 
   private def next(): Future[Unit] =
     val t = System.currentTimeMillis()
-    if running then
-      action(mappedState, increment / Animation.ResultInterval).flatMap { _ =>
+    action(mappedState, increment / Animation.ResultInterval).flatMap { _ =>
+      if running then
         setInternal(state + increment)
         
         val elapsed = System.currentTimeMillis() - t
         val remaining = Animation.FrameInterval - elapsed
         if remaining > 0 then delay(remaining).flatMap(_ => next())
         else delay(1).flatMap(_ => next())
-      }
-    else Future {}
+      else Future {}
+    }
 
   private def delay(milliseconds: Long): Future[Unit] = {
     val p = Promise[Unit]()
