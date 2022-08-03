@@ -15,6 +15,9 @@
     canvas {
       background-color: black;
     }
+    #info-time {
+      width: 200px;
+    }
   </style>
 </head>
 
@@ -29,6 +32,7 @@
         <button id="slower" title="Make the animation slower" type="button" class="btn btn-info bi-skip-backward"></button>
         <button id="faster" title="Make the animation faster" type="button" class="btn btn-info bi-skip-forward"></button>
         <button id="reverse" title="Reverse the animation" type="button" class="btn btn-info bi-arrow-left-right"></button>
+        Time: <span id="info-time"></span>
         <input id="range" type="range" class="form-range" min="0" max="5" step="1">
         <canvas id="canvas"></canvas>
         <div class="card">

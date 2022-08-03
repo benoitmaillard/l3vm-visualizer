@@ -107,6 +107,12 @@ object VisualizerApp {
       document.getElementById("range").asInstanceOf[html.Input].value = i.toString
       //grid.processEventSeq(s)
       grid.processBulk(s)
+
+      if nLast > 1 then
+        document.getElementById("info-time").textContent = f"${math.max(0, i - nLast + 1)} - $i"
+      else
+        document.getElementById("info-time").textContent = i.toString
+      // document.getElementById("info-step").textContent = nLast.toString
     }
   }
 }
