@@ -8239,7 +8239,7 @@ function $h_Lvisualizer_webapp_VisualizerApp$() {
 }
 $h_Lvisualizer_webapp_VisualizerApp$.prototype = $c_Lvisualizer_webapp_VisualizerApp$.prototype;
 $c_Lvisualizer_webapp_VisualizerApp$.prototype.main__AT__V = (function(args) {
-  var trace = new $c_Lvisualizer_webapp_BinaryTrace("./resources/trace.bin", "./resources/index.bin", "./resources/phases.bin");
+  var trace = new $c_Lvisualizer_webapp_BinaryTrace("https://media.githubusercontent.com/media/benoitmaillard/l3vm-visualizer/pages/resources/trace.bin", "https://media.githubusercontent.com/media/benoitmaillard/l3vm-visualizer/pages/resources/index.bin", "https://media.githubusercontent.com/media/benoitmaillard/l3vm-visualizer/pages/resources/phases.bin");
   trace.length__s_concurrent_Future().foreach__F1__s_concurrent_ExecutionContext__V(new $c_sjsr_AnonFunction1(((this$2, trace$2) => ((v1) => {
     var t = $uJ(v1);
     var lo = t.RTLong__f_lo;
