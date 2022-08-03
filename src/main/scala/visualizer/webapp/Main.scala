@@ -78,21 +78,22 @@ object VisualizerApp {
         val child = dom.document.createElement("li")
         child.classList.add("list-group-item")
 
-        child.textContent = phase.toString
         
         val startButton = dom.document.createElement("button")
         startButton.setAttribute("type", "button")
         startButton.textContent = start.toString
-
+        startButton.setAttribute("class", "btn btn-primary btn-sm btn-jump")
+        
         startButton.asInstanceOf[html.Button].addEventListener("click", _ => animation.set(start))
         
         val endButton = dom.document.createElement("button")
         endButton.setAttribute("type", "button")
         endButton.textContent = end.toString
-
+        endButton.setAttribute("class", "btn btn-primary btn-sm btn-jump")
+        
         endButton.asInstanceOf[html.Button].addEventListener("click", _ => animation.set(end))
-
-        child.append(startButton, endButton)
+        
+        child.append(startButton, " ", endButton, " ", phase.toString)
         elt.append(child)
       }
     }
