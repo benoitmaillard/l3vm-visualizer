@@ -8237,13 +8237,21 @@ function $h_Lvisualizer_webapp_VisualizerApp$() {
 $h_Lvisualizer_webapp_VisualizerApp$.prototype = $c_Lvisualizer_webapp_VisualizerApp$.prototype;
 $c_Lvisualizer_webapp_VisualizerApp$.prototype.main__AT__V = (function(args) {
   var trace = new $c_Lvisualizer_webapp_BinaryTrace("./resources/trace.bin", "./resources/index.bin", "./resources/phases.bin");
-  trace.length__s_concurrent_Future().foreach__F1__s_concurrent_ExecutionContext__V(new $c_sjsr_AnonFunction1(((this$2, trace$2) => ((v1) => {
+  new $c_Lvisualizer_webapp_ChunkedFile("https://drive.switch.ch/index.php/s/6Mh4EXQA1YoVHNl/download").read__J__I__I__s_concurrent_Future($L0, 10, 1).foreach__F1__s_concurrent_ExecutionContext__V(new $c_sjsr_AnonFunction1(((r) => {
+    var r$1 = $as_sc_Iterator(r);
+    var x = $as_sc_SeqOps(r$1.next__O()).apply__I__O(0);
+    var this$4 = $m_s_Console$();
+    var this$5 = this$4.out__Ljava_io_PrintStream();
+    this$5.java$lang$JSConsoleBasedPrintStream$$printString__T__V((x + "\n"));
+    return "undefined"
+  })), $m_s_concurrent_ExecutionContext$().global__s_concurrent_ExecutionContextExecutor());
+  trace.length__s_concurrent_Future().foreach__F1__s_concurrent_ExecutionContext__V(new $c_sjsr_AnonFunction1(((this$2$1, trace$2) => ((v1) => {
     var t = $uJ(v1);
     var lo = t.RTLong__f_lo;
     var hi = t.RTLong__f_hi;
-    var $$x1 = this$2.Lvisualizer_webapp_VisualizerApp$__f_width;
-    var x = (this$2.Lvisualizer_webapp_VisualizerApp$__f_memSize / this$2.Lvisualizer_webapp_VisualizerApp$__f_width);
-    var memRep = new $c_Lvisualizer_webapp_ScanMemoryRepresentation($$x1, $doubleToInt($uD(Math.ceil(x))));
+    var $$x1 = this$2$1.Lvisualizer_webapp_VisualizerApp$__f_width;
+    var x$1 = (this$2$1.Lvisualizer_webapp_VisualizerApp$__f_memSize / this$2$1.Lvisualizer_webapp_VisualizerApp$__f_width);
+    var memRep = new $c_Lvisualizer_webapp_ScanMemoryRepresentation($$x1, $doubleToInt($uD(Math.ceil(x$1))));
     var $$x6 = $m_s_package$().s_package$__f_Seq;
     var $$x5 = $m_sr_ScalaRunTime$();
     var range = new $c_sci_Range$Exclusive(0, 572, 1);
@@ -8254,51 +8262,51 @@ $c_Lvisualizer_webapp_VisualizerApp$.prototype.main__AT__V = (function(args) {
     var $$x2 = new $c_Lvisualizer_webapp_MemoryRegion(range$2, "Bitmap");
     var range$3 = new $c_sci_Range$Exclusive(8633, 250000, 1);
     var regions = $as_sci_Seq($$x6.apply__sci_Seq__sc_SeqOps($$x5.wrapRefArray__AO__sci_ArraySeq(new ($d_Lvisualizer_webapp_MemoryRegion.getArrayOf().constr)([$$x4, $$x3, $$x2, new $c_Lvisualizer_webapp_MemoryRegion(range$3, "Heap")]))));
-    var size = this$2.Lvisualizer_webapp_VisualizerApp$__f_memSize;
+    var size = this$2$1.Lvisualizer_webapp_VisualizerApp$__f_memSize;
     var metaData = new $c_Lvisualizer_webapp_MemoryMetaData(regions, size);
-    var painter = new $c_Lvisualizer_webapp_ArrayPainter(this$2.Lvisualizer_webapp_VisualizerApp$__f_canvas, 2);
-    var grid = new $c_Lvisualizer_webapp_GridManager(painter, memRep, this$2.Lvisualizer_webapp_VisualizerApp$__f_squareWidth, metaData);
-    var animation = new $c_Lvisualizer_webapp_Animation(new $c_sjsr_AnonFunction2(((this$22, trace$1$2, grid$2) => ((i, step) => {
+    var painter = new $c_Lvisualizer_webapp_ArrayPainter(this$2$1.Lvisualizer_webapp_VisualizerApp$__f_canvas, 2);
+    var grid = new $c_Lvisualizer_webapp_GridManager(painter, memRep, this$2$1.Lvisualizer_webapp_VisualizerApp$__f_squareWidth, metaData);
+    var animation = new $c_Lvisualizer_webapp_Animation(new $c_sjsr_AnonFunction2(((this$26, trace$1$2, grid$2) => ((i, step) => {
       var t$1 = $uJ(i);
       var lo$1 = t$1.RTLong__f_lo;
       var hi$1 = t$1.RTLong__f_hi;
       var step$1 = $uI(step);
-      return this$22.refresh__Lvisualizer_webapp_ProgramTrace__Lvisualizer_webapp_GridManager__J__I__s_concurrent_Future(trace$1$2, grid$2, new $c_RTLong(lo$1, hi$1), step$1)
-    }))(this$2, trace$2, grid)), new $c_RTLong(lo, hi));
+      return this$26.refresh__Lvisualizer_webapp_ProgramTrace__Lvisualizer_webapp_GridManager__J__I__s_concurrent_Future(trace$1$2, grid$2, new $c_RTLong(lo$1, hi$1), step$1)
+    }))(this$2$1, trace$2, grid)), new $c_RTLong(lo, hi));
     document.getElementById("range").setAttribute("max", $m_RTLong$().org$scalajs$linker$runtime$RuntimeLong$$toString__I__I__T(lo, hi));
     var \u03b41$ = document.getElementById("range");
     \u03b41$.addEventListener("change", ((animation$2) => ((e) => {
-      var x$1 = $as_T(e.target.value);
-      var this$25 = $m_jl_Integer$();
-      var value = this$25.parseInt__T__I__I(x$1, 10);
+      var x$2 = $as_T(e.target.value);
+      var this$29 = $m_jl_Integer$();
+      var value = this$29.parseInt__T__I__I(x$2, 10);
       var hi$2 = (value >> 31);
       animation$2.set__J__V(new $c_RTLong(value, hi$2))
     }))(animation));
-    this$2.buttonListener__T__F1__V("play", new $c_sjsr_AnonFunction1(((animation$3) => ((e$2) => {
+    this$2$1.buttonListener__T__F1__V("play", new $c_sjsr_AnonFunction1(((animation$3) => ((e$2) => {
       animation$3.toggle__V()
     }))(animation)));
-    this$2.buttonListener__T__F1__V("reset", new $c_sjsr_AnonFunction1(((animation$4) => ((e$3) => {
+    this$2$1.buttonListener__T__F1__V("reset", new $c_sjsr_AnonFunction1(((animation$4) => ((e$3) => {
       animation$4.reset__V()
     }))(animation)));
-    this$2.buttonListener__T__F1__V("prev", new $c_sjsr_AnonFunction1(((animation$5) => ((e$4) => {
+    this$2$1.buttonListener__T__F1__V("prev", new $c_sjsr_AnonFunction1(((animation$5) => ((e$4) => {
       animation$5.move__J__V(new $c_RTLong((-1), (-1)))
     }))(animation)));
-    this$2.buttonListener__T__F1__V("next", new $c_sjsr_AnonFunction1(((animation$6) => ((e$5) => {
+    this$2$1.buttonListener__T__F1__V("next", new $c_sjsr_AnonFunction1(((animation$6) => ((e$5) => {
       animation$6.move__J__V(new $c_RTLong(1, 0))
     }))(animation)));
-    this$2.buttonListener__T__F1__V("faster", new $c_sjsr_AnonFunction1(((animation$7) => ((e$6) => {
+    this$2$1.buttonListener__T__F1__V("faster", new $c_sjsr_AnonFunction1(((animation$7) => ((e$6) => {
       animation$7.accelerate__V()
     }))(animation)));
-    this$2.buttonListener__T__F1__V("slower", new $c_sjsr_AnonFunction1(((animation$8) => ((e$7) => {
+    this$2$1.buttonListener__T__F1__V("slower", new $c_sjsr_AnonFunction1(((animation$8) => ((e$7) => {
       animation$8.decelerate__V()
     }))(animation)));
-    this$2.buttonListener__T__F1__V("reverse", new $c_sjsr_AnonFunction1(((animation$9) => ((e$8) => {
+    this$2$1.buttonListener__T__F1__V("reverse", new $c_sjsr_AnonFunction1(((animation$9) => ((e$8) => {
       animation$9.reverse__V()
     }))(animation)));
     trace$2.phases__s_concurrent_Future().foreach__F1__s_concurrent_ExecutionContext__V(new $c_sjsr_AnonFunction1(((this$10$1, animation$10) => ((_$1) => {
       var _$1$1 = $as_sc_Iterator(_$1);
       this$10$1.displayPhases__Lvisualizer_webapp_Animation__sc_Iterator__V(animation$10, _$1$1)
-    }))(this$2, animation)), $m_s_concurrent_ExecutionContext$().global__s_concurrent_ExecutionContextExecutor())
+    }))(this$2$1, animation)), $m_s_concurrent_ExecutionContext$().global__s_concurrent_ExecutionContextExecutor())
   }))(this, trace)), $m_s_concurrent_ExecutionContext$().global__s_concurrent_ExecutionContextExecutor())
 });
 $c_Lvisualizer_webapp_VisualizerApp$.prototype.displayPhases__Lvisualizer_webapp_Animation__sc_Iterator__V = (function(animation, phases) {
