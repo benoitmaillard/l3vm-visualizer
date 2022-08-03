@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="UTF-8">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/css/bootstrap.min.css" rel="stylesheet"
+    integrity="sha384-0evHe/X+R7YkIZDRvuzKMRqM+OrBnVFBL6DOitfPri4tjfHxaWutUpFmBp4vmVor" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.3/font/bootstrap-icons.css">
+  <title>Index</title>
+  <style>
+    .btn:focus {
+      outline: none;
+      box-shadow: none;
+    }
+    canvas {
+      background-color: black;
+    }
+    #info-time {
+      width: 200px;
+    }
+    .btn-jump {
+      width: 100px;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <div class="card mt-4 mb-4">
+      <div class="card-body">
+        <button id="play" title="Toggle animation" type="button" class="btn btn-info bi-play"></button>
+        <button id="reset" title="Reset animation" type="button" class="btn btn-info bi-arrow-counterclockwise"></button>
+        <button id="prev" title="Go to next step" type="button" class="btn btn-info bi-arrow-left"></button>
+        <button id="next" title="Go to previous step" type="button" class="btn btn-info bi-arrow-right"></button>
+        <button id="slower" title="Make the animation slower" type="button" class="btn btn-info bi-skip-backward"></button>
+        <button id="faster" title="Make the animation faster" type="button" class="btn btn-info bi-skip-forward"></button>
+        <button id="reverse" title="Reverse the animation" type="button" class="btn btn-info bi-arrow-left-right"></button>
+        Time: <span id="info-time"></span>
+        <input id="range" type="range" class="form-range" min="0" max="5" step="1">
+        <canvas id="canvas"></canvas>
+        <div class="card">
+          <div class="card-header">
+            Phases
+          </div>
+          <ul id="phases" class="list-group list-group-flush">
+            <!-- <li class="list-group-item">An item</li>
+            <li class="list-group-item">A second item</li>
+            <li class="list-group-item">A third item</li> -->
+          </ul>
+        
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- Include Scala.js compiled code -->
+  <script type="text/javascript" src="./target/scala-3.1.3/memory-visualizer-fastopt/main.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/js/bootstrap.bundle.min.js"
+    integrity="sha384-pprn3073KE6tl6bjs2QrFaJGz5/SUsLqktiwsUTF55Jfv3qYSDhgCecCxMW52nD2"
+    crossorigin="anonymous"></script>
+</body>
+
+</html>
