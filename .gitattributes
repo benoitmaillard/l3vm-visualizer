@@ -1,0 +1,4 @@
+resources/trace.txt filter=lfs diff=lfs merge=lfs -text
+resources/index.bin filter=lfs diff=lfs merge=lfs -text
+resources/phases.bin filter=lfs diff=lfs merge=lfs -text
+resources/trace.bin filter=lfs diff=lfs merge=lfs -text
