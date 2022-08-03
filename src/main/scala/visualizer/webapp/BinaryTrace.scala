@@ -43,9 +43,32 @@ object TraceIndex {
   val EntryBytes = 4
 }
 
-case class BinaryTrace(url: String, clockUrl: String) extends ProgramTrace {
+class PhaseIndex(url: String) {
+  val file = ChunkedFile(url)
+
+  def length(): Future[Long] = file.length().map(_ / PhaseIndex.EntryBytes)
+
+  def read(from: Long, length: Int): Future[Iterator[(TracePhase, Int, Int)]] = 
+    file.read(from, length, PhaseIndex.EntryBytes).map(_.map(extractBounds))
+
+  private def extractBounds(s: Seq[Short]) = (
+    TracePhase.values(s(0)),
+    (s(1) << 24) | (s(2) << 16) | (s(3) << 8) | s(4),
+    (s(5) << 24) | (s(6) << 16) | (s(7) << 8) | s(8)
+  )
+}
+
+object PhaseIndex {
+  val EntryBytes = 9
+}
+
+case class BinaryTrace(url: String, clockUrl: String, phaseUrl: String) extends ProgramTrace {
   private val file = new ChunkedFile(url)
   private val clockFile = new TraceIndex(clockUrl)
+  private val phaseFile = new PhaseIndex(phaseUrl)
+
+  def phases(): Future[Iterator[(TracePhase, Int, Int)]] =
+    phaseFile.length().flatMap(l => phaseFile.read(0, l.toInt))
 
   def read(
       from: Long,

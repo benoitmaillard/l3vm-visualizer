@@ -11,11 +11,15 @@ case class MemoryWrite(address: Int) extends TraceEvent
 case class PhaseStart(phase: TracePhase) extends TraceEvent
 case class PhaseEnd(phase: TracePhase) extends TraceEvent
 
-enum TracePhase:
-    case CodeLoad extends TracePhase
-    case CodeExecute extends TracePhase
-    case GarbageMark extends TracePhase
-    case GarbageSweep extends TracePhase
+enum TracePhase(str: String) {
+  override def toString(): String = str
+
+  case CodeLoad extends TracePhase("Code load")
+  case CodeExecute extends TracePhase("Code execute")
+  case GarbageMark extends TracePhase("Garbage mark")
+  case GarbageSweep extends TracePhase("Garbage sweep")
+}
+
 
 trait ProgramTrace {
   def read(

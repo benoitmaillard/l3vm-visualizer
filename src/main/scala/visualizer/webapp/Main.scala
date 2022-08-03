@@ -31,7 +31,7 @@ object VisualizerApp {
   val ctx = canvas.getContext("2d").asInstanceOf[dom.CanvasRenderingContext2D]
 
   def main(args: Array[String]): Unit = {    
-    val trace = BinaryTrace("./resources/trace.bin", "./resources/index.bin")
+    val trace = BinaryTrace("./resources/trace.bin", "./resources/index.bin", "./resources/phases.bin")
 
     trace.length().foreach { l =>
       val memRep = ScanMemoryRepresentation(width, math.ceil(memSize.toDouble / width).toInt)
@@ -64,17 +64,49 @@ object VisualizerApp {
       buttonListener("faster", e => animation.accelerate())
       buttonListener("slower", e => animation.decelerate())
       buttonListener("reverse", e => animation.reverse())
+
+      trace.phases().foreach(displayPhases(animation, _))
     }
 
+  }
+
+  def displayPhases(animation: Animation, phases: Iterator[(TracePhase, Int, Int)]) = {
+    phases.toSeq.sortBy((_, s, _) => s) foreach { 
+      case (phase, start, end) => {
+        val elt = document.getElementById("phases")
+        
+        val child = dom.document.createElement("li")
+        child.classList.add("list-group-item")
+
+        child.textContent = phase.toString
+        
+        val startButton = dom.document.createElement("button")
+        startButton.setAttribute("type", "button")
+        startButton.textContent = start.toString
+
+        startButton.asInstanceOf[html.Button].addEventListener("click", _ => animation.set(start))
+        
+        val endButton = dom.document.createElement("button")
+        endButton.setAttribute("type", "button")
+        endButton.textContent = end.toString
+
+        endButton.asInstanceOf[html.Button].addEventListener("click", _ => animation.set(end))
+
+        child.append(startButton, endButton)
+        elt.append(child)
+      }
+    }
   }
 
   def buttonListener(id: String, action: Event => Unit) =
     document.getElementById(id).asInstanceOf[html.Button].addEventListener("click", action)
 
-  def refresh(trace: ProgramTrace, grid: GridManager)(i: Long): Future[Unit] = {
-    trace.read(i, last).map { s =>
+  def refresh(trace: ProgramTrace, grid: GridManager)(i: Long, step: Int): Future[Unit] = {
+    val nLast = if step == 0 then 1 else step
+    trace.readBulk(i, nLast).map { s =>
       document.getElementById("range").asInstanceOf[html.Input].value = i.toString
-      grid.processEventSeq(s)
+      //grid.processEventSeq(s)
+      grid.processBulk(s)
     }
   }
 }

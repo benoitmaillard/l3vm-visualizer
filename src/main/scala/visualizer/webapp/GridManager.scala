@@ -29,6 +29,7 @@ class GridManager(
     events.foreach {
       case MemoryRead(address) => counts.updateWith(address)(v => Some(v.map((r, w) => (r + 1, w)).getOrElse((1, 0))))
       case MemoryWrite(address) => counts.updateWith(address)(v => Some(v.map((r, w) => (r, w + 1)).getOrElse((0, 1))))
+      case _ =>
     }
     val maxCount = counts.values.max
     counts.foreach { case (address, (r, w)) =>
