@@ -21,84 +21,36 @@ enum TracePhase(str: String) {
   case GarbageSweep extends TracePhase("Garbage sweep")
 }
 
-
-class TraceIndex(clockUrl: String) {
-  private val file = new ChunkedFile(clockUrl)
-
-  def readAll(from: Long, length: Int): Future[Iterator[(Int, Int)]] = {
-    val rangeStart = if from > 0 then from - 1 else 0
-    val rangeLength = if from > 0 then length + 1 else length
-    file.read(rangeStart, rangeLength, TraceIndex.EntryBytes) map { bytes =>
-      val extracted = bytes.map(extractIndex)
-      val complete = if from > 0 then extracted else Iterator(0) ++ extracted
-      complete.sliding(2).withPartial(false).map(a => (a(0), a(1)))
-    }
-  }
-
-  def readRange(from: Long, length: Int): Future[(Int, Int)] = {
-    val startFuture = if from == 0 then Future {0} else file.read(from - 1, 1, TraceIndex.EntryBytes).map(c => extractIndex(c.next()))
-    val endFuture = file.read((from + length - 1), 1, TraceIndex.EntryBytes).map(c => extractIndex(c.next()))
-    if from == 0 then endFuture.map(r => (0, r))
-    else (startFuture zip endFuture)
-  }
-
-  def length(): Future[Long] = file.length().map(_ / TraceIndex.EntryBytes)
-
-  private def extractIndex(s: Seq[Short]) =
-    (s(0) << 24) | (s(1) << 16) | (s(2) << 8) | s(3)
-}
-
-object TraceIndex {
-  val EntryBytes = 4
-}
-
-class PhaseIndex(url: String) {
-  val file = ChunkedFile(url)
-
-  def length(): Future[Long] = file.length().map(_ / PhaseIndex.EntryBytes)
-
-  def read(from: Long, length: Int): Future[Iterator[(TracePhase, Int, Int)]] = 
-    file.read(from, length, PhaseIndex.EntryBytes).map(_.map(extractBounds))
-
-  private def extractBounds(s: Seq[Short]) = (
-    TracePhase.values(s(0)),
-    (s(1) << 24) | (s(2) << 16) | (s(3) << 8) | s(4),
-    (s(5) << 24) | (s(6) << 16) | (s(7) << 8) | s(8)
-  )
-}
-
-object PhaseIndex {
-  val EntryBytes = 9
-}
-
 case class ProgramTrace(url: String, clockUrl: String, phaseUrl: String) {
-  private val file = new ChunkedFile(url)
-  private val clockFile = new TraceIndex(clockUrl)
-  private val phaseFile = new PhaseIndex(phaseUrl)
+  private val file = new GroupedFile(ChunkedFile(url), ProgramTrace.EventBytes)
+  private val clockFile = new TraceIndex(ChunkedFile(clockUrl))
+  private val phaseFile = new PhaseIndex(ChunkedFile(phaseUrl))
 
   def phases(): Future[Iterator[(TracePhase, Int, Int)]] =
-    phaseFile.length().flatMap(l => phaseFile.read(0, l.toInt))
+    phaseFile.length().flatMap(l => phaseFile.readRange(0, l.toInt))
 
-  def read(
-      from: Long,
-      length: Int,
-      forward: Boolean = true
-  ): Future[Seq[Seq[TraceEvent]]] = {
-    val tMin = math.max(0, from - length + 1)
-    val tLength = math.min(from + 1, length).toInt
+  // def read(
+  //     from: Long,
+  //     length: Int,
+  //     forward: Boolean = true
+  // ): Future[Seq[Seq[TraceEvent]]] = {
+  //   val tMin = math.max(0, from - length + 1)
+  //   val tLength = math.min(from + 1, length).toInt
     
-    clockFile.readAll(tMin, tLength).flatMap { ranges =>
-      val futures = ranges.map((from, to) => file.read(from, (to - from), BinaryTrace.EventBytes).map(s => s.map(extractEvent).toSeq))
-      Future.sequence(futures.toSeq.reverse)
-    }
-  }
+  //   clockFile.readAll(tMin, tLength).flatMap { ranges =>
+  //     val futures = ranges.map((from, to) => file.read(from, (to - from), BinaryTrace.EventBytes).map(s => s.map(extractEvent).toSeq))
+  //     Future.sequence(futures.toSeq.reverse)
+  //   }
+  // }
 
-  def readBulk(from: Long, length: Int): Future[Iterator[TraceEvent]] = {
-    val tMin = math.max(0, from - length + 1)
+  def readRange(from: Long, length: Int): Future[Iterator[TraceEvent]] = {
+    // TODO simplify this calculation
     val tLength = math.min(from + 1, length).toInt
-
-    clockFile.readRange(tMin, tLength).flatMap { (from, to) =>
-      file.read(from, (to - from), BinaryTrace.EventBytes).map(s => s.map(extractEvent))
+    val tMin = math.max(0, from - length + 1)
+    val tMax = tMin + tLength - 1
+    (clockFile.read(tMin) zip clockFile.read(tMax)) flatMap {
+      case ((from, _), (_, to)) =>
+        file.readRange(from, (to - from)).map(_.map(extractEvent))
     }
   }
 
@@ -116,6 +68,6 @@ case class ProgramTrace(url: String, clockUrl: String, phaseUrl: String) {
     }
 }
 
-object BinaryTrace {
+object ProgramTrace {
   val EventBytes = 3
 }

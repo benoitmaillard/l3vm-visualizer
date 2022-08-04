@@ -104,7 +104,7 @@ object VisualizerApp {
 
   def refresh(trace: ProgramTrace, grid: GridManager)(i: Long, step: Int): Future[Unit] = {
     val nLast = if step == 0 then 1 else step
-    trace.readBulk(i, nLast).map { s =>
+    trace.readRange(i, nLast).map { s =>
       document.getElementById("range").asInstanceOf[html.Input].value = i.toString
       //grid.processEventSeq(s)
       grid.processBulk(s)
@@ -115,5 +115,5 @@ object VisualizerApp {
         document.getElementById("info-time").textContent = i.toString
       // document.getElementById("info-step").textContent = nLast.toString
     }
-  }
+  }.recoverWith(f => {f.printStackTrace(); Future.failed(f)})
 }
