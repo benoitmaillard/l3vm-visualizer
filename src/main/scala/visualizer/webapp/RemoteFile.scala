@@ -113,6 +113,10 @@ class PhaseIndex(file: ChunkedFile) extends RemoteFile[(TracePhase, Int, Int)] {
   )
 }
 
+object PhaseIndex {
+  val EntryBytes = 9
+}
+
 abstract class TraceEvent
 case class MemoryRead(address: Int) extends TraceEvent
 case class MemoryWrite(address: Int) extends TraceEvent
@@ -129,7 +133,7 @@ enum TracePhase(str: String) {
 }
 
 class TraceFile(file: ChunkedFile) extends RemoteFile[TraceEvent] {
-  private val groupedFile = GroupedFile(file, PhaseIndex.EntryBytes)
+  private val groupedFile = GroupedFile(file, TraceFile.EntryBytes)
 
   override def length(): Future[Long] = groupedFile.length()
 
@@ -151,6 +155,6 @@ class TraceFile(file: ChunkedFile) extends RemoteFile[TraceEvent] {
   }
 }
 
-object PhaseIndex {
+object TraceFile {
   val EntryBytes = 3
 }
