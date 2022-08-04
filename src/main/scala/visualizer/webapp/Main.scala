@@ -31,7 +31,7 @@ object VisualizerApp {
   val ctx = canvas.getContext("2d").asInstanceOf[dom.CanvasRenderingContext2D]
 
   def main(args: Array[String]): Unit = {    
-    val trace = BinaryTrace("./resources/trace.bin", "./resources/index.bin", "./resources/phases.bin")
+    val trace = ProgramTrace("./resources/trace.bin", "./resources/index.bin", "./resources/phases.bin")
 
     trace.length().foreach { l =>
       val memRep = ScanMemoryRepresentation(width, math.ceil(memSize.toDouble / width).toInt)
