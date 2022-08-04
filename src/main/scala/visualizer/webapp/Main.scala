@@ -43,7 +43,7 @@ object VisualizerApp {
       )
       val metaData = MemoryMetaData(regions, memSize)
       // val painter = ShapePainter(canvas)
-      val painter = ArrayPainter(canvas, 2)
+      val painter = CanvasPainter(canvas, 2)
       val grid = GridManager(painter, memRep, squareWidth, metaData)
       
       val animation = Animation(refresh(trace, grid), l)
@@ -107,7 +107,7 @@ object VisualizerApp {
     trace.readRange(i, nLast).map { s =>
       document.getElementById("range").asInstanceOf[html.Input].value = i.toString
       //grid.processEventSeq(s)
-      grid.processBulk(s)
+      grid.processAll(s)
 
       if nLast > 1 then
         document.getElementById("info-time").textContent = f"${math.max(0, i - nLast + 1)} - $i"

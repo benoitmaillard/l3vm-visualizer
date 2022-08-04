@@ -3,28 +3,45 @@ package visualizer.webapp
 import org.scalajs.dom
 import scala.collection.mutable.HashMap
 
+/** Tools to draw the program trace on a discrete grid  
+ * 
+ * @constructor create a new GridManager
+ * @param painter canvas painter
+ * @param memRep spatial memory representation to use for mapping on the grid
+ * @param squareWidth width (and height) of a single square on the grid
+ * @param metadata information about the memory size and regions 
+*/
 class GridManager(
     painter: CanvasPainter,
     memRep: SpatialMemoryRepresentation,
     squareWidth: Int,
-    metaData: MemoryMetaData
+    metadata: MemoryMetaData
 ) {
   val counts = HashMap[Int, (Int, Int)]()
 
   val boundaryWidth = 1
   val gridRect = GridRectangle(0, 0, memRep.height, memRep.width)
   painter.resize(memRep.width * squareWidth, memRep.height * squareWidth)
-  val boundaries = metaData.regions.map(r => computeBoundaries(r.range))
+  val boundaries = metadata.regions.map(r => computeBoundaries(r.range))
   val colors = Color.range(GridManager.RegionPaletteFrom, GridManager.RegionPaletteTo, boundaries.length)
   (boundaries zip colors).foreach(drawBoundaries)
   painter.refresh(1)
 
-  def processEventSeq(s: Seq[Seq[TraceEvent]]): Unit = {
-    s.zipWithIndex.reverse.foreach((c, i) => c.foreach(processEvent(_, i)))
-    painter.refresh(0)
-  }
-
-  def processBulk(events: Iterator[TraceEvent]): Unit = {
+  // def processEventSeq(s: Seq[Seq[TraceEvent]]): Unit = {
+  //   s.zipWithIndex.reverse.foreach((c, i) => c.foreach(processEvent(_, i)))
+  //   painter.refresh(0)
+  // }
+  
+  /** Displays a serie of trace events on the grid. The intensity of the color
+   *  on a square depends on the number of accesses on the corresponding word.
+   *  The more accesses, the more intense the color. Write and read events
+   *  are displayed with distinct colors. The colors are mixed when both
+   *  read and write events are present.
+   * 
+   * @param events events to display
+   * 
+  */
+  def processAll(events: Iterator[TraceEvent]): Unit = {
     counts.clear()
     events.foreach {
       case MemoryRead(address) => counts.updateWith(address)(v => Some(v.map((r, w) => (r + 1, w)).getOrElse((1, 0))))
@@ -44,14 +61,14 @@ class GridManager(
     painter.refresh(0)
   }
 
-  private def processEvent(e: TraceEvent, pos: Int): Unit = e match {
-    case MemoryRead(address) =>
-      drawWord(address, GridManager.ReadColor.copy(a = alphaAt(pos)))
-    case MemoryWrite(address) =>
-      drawWord(address, GridManager.WriteColor.copy(a = alphaAt(pos)))
-  }
+  // private def processEvent(e: TraceEvent, pos: Int): Unit = e match {
+  //   case MemoryRead(address) =>
+  //     drawWord(address, GridManager.ReadColor.copy(a = alphaAt(pos)))
+  //   case MemoryWrite(address) =>
+  //     drawWord(address, GridManager.WriteColor.copy(a = alphaAt(pos)))
+  // }
 
-  private def alphaAt(pos: Int) = 1.0f / (pos+1)
+  // private def alphaAt(pos: Int) = 1.0f / (pos+1)
 
   private def drawWord(address: Int, color: Color): Unit = {
     val square = memRep.addressToSquare(address)

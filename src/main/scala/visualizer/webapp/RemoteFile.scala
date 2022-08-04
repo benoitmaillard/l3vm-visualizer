@@ -5,12 +5,36 @@ import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.collection.View
 
+/** Abstract representation of a remote resource 
+ * 
+ * @tparam A type of elements that can be read 
+*/
 trait RemoteFile[A] {
+
+  /** Length of the file (number of elements of type A that can be read) */
   def length(): Future[Long]
+
+  /** Reads a single element 
+   * 
+   * @param i index of the element
+  */
   def read(i: Long): Future[A]
+
+  /** Reads a range of elements 
+   * 
+   * @param from index of first element
+   * @param n number of elements to read
+  */
   def readRange(from: Long, n: Int): Future[Iterator[A]]
 }
 
+/** File that is read chunk by chunk from the remote server. Chunks
+ *  are downloaded when needed in a manner that is transparent to the
+ *  user. Once downloaded, a chunk is kept in memory.
+ * 
+ * @param url location of the resource
+ * 
+ */
 class ChunkedFile(url: String) extends RemoteFile[Short] {
   private val chunkMap: mutable.Map[Long, Future[Array[Short]]] = mutable.Map()
 
@@ -54,6 +78,14 @@ object ChunkedFile {
   val ChunkSize = 0x80000
 }
 
+/** File that is always read by groups of n elements (n is fixed). Indexes
+ *  used when reading from such a file are indexes of groups and
+ *  not of individual elements.
+ * 
+ * @tparam A type of elements in the underlying file
+ * @param file underlying file
+ * @param groupSize size of a group
+*/
 class GroupedFile[A](file: RemoteFile[A], groupSize: Int) extends RemoteFile[Seq[A]] {
   override def length(): Future[Long] =
     file.length().map(_ / groupSize)
@@ -65,7 +97,13 @@ class GroupedFile[A](file: RemoteFile[A], groupSize: Int) extends RemoteFile[Seq
     file.readRange(from * groupSize, n * groupSize).map(_.grouped(groupSize))
 }
 
-// TODO not necessary ChunkedFile, any file with Short
+/** Index file that contains a mapping from clock ticks to indexes of events
+ *  in the program trace. Such an index file is represented in binary
+ *  as follows: an integer at position i in the index file is the end
+ *  (position of the last event + 1) of the range for tick i.
+ * 
+ * @param file underlying file
+ */
 class TraceIndex(file: ChunkedFile) extends RemoteFile[(Int, Int)] {
   private val groupedFile = GroupedFile(file, TraceIndex.EntryBytes)
 
@@ -95,6 +133,13 @@ object TraceIndex {
   val EntryBytes = 4
 }
 
+/** Index file that contains data about the phases in the program execution.
+ *  Each phase is represented as 9 bytes: byte 0 is the type of phase,
+ *  bytes 1-4 are the beginning (in clock time) and bytes 5-8 are the
+ *  end of the phase.
+ * 
+ * @param file underlying file
+ */
 class PhaseIndex(file: ChunkedFile) extends RemoteFile[(TracePhase, Int, Int)] {
   private val groupedFile = GroupedFile(file, PhaseIndex.EntryBytes)
 
@@ -132,6 +177,12 @@ enum TracePhase(str: String) {
   case GarbageSweep extends TracePhase("Garbage sweep")
 }
 
+/** File that contains the event data. Each event is represented
+ *  as 3 bytes: byte 0 is the type of event, bytes 1-2 are
+ *  the word address.
+ * 
+ * @param file underlying file
+ */
 class TraceFile(file: ChunkedFile) extends RemoteFile[TraceEvent] {
   private val groupedFile = GroupedFile(file, TraceFile.EntryBytes)
 

@@ -2,46 +2,30 @@ package visualizer.webapp
 
 import org.scalajs.dom
 
-abstract class CanvasPainter(val canvas: dom.html.Canvas) {
-  def resize(width: Int, height: Int): Unit = {
-    canvas.width = width
-    canvas.height = height
-  }
-  def drawRect(x: Int, y: Int, w: Int, h: Int, color: Color, layer: Int): Unit
-  def refresh(layer: Int): Unit
-}
-
-// Draw rectangles using high-level API
-class ShapePainter(canvas: dom.html.Canvas) extends CanvasPainter(canvas) {
-  val ctx = canvas.getContext("2d", scalajs.js.Dictionary("alpha" -> false)).asInstanceOf[dom.CanvasRenderingContext2D]
-  var clearRequired = false
-
-  override def drawRect(x: Int, y: Int, w: Int, h: Int, c: Color, layer: Int): Unit = {
-    //println(clearRequired)
-    if (clearRequired) {
-      ctx.clearRect(0, 0, canvas.width, canvas.height)
-      clearRequired = false
-    }
-    
-    ctx.clearRect(x, y, w, h)
-    ctx.fillStyle = f"rgba(${c.r}, ${c.g}, ${c.b}, ${c.a})"
-    ctx.fillRect(x, y, w, h)
-  }
-    
-  override def refresh(layer: Int): Unit = {
-    clearRequired = true
-  }
-}
-
-// Draw rectangles pixel by pixel using the low-level ImageData API
-class ArrayPainter(canvas: dom.html.Canvas, nLayers: Int) extends CanvasPainter(canvas) {
-  val layers: Array[dom.html.Canvas] = (canvas +: (1 until nLayers).map(_ => dom.document.createElement("canvas").asInstanceOf[dom.html.Canvas])).toArray
-  val contexts = layers.map(c => c.getContext("2d").asInstanceOf[dom.CanvasRenderingContext2D])
-  var buffers = contexts.map(_.createImageData(canvas.width, canvas.height))
+/** Tool to draw rectangles on a canvas using the low-level ImageData API.
+ *  The layer with at index 0 is the bottom layer. Drawings on a given
+ *  layer will appear on top of drawings on layers with a lower index.
+ *  For performance reaons, pixels of lower layers are overwritten and
+ *  transparency does not play any role.
+ * 
+ * @constructor create a canvas painter
+ * @param canvas canvas on which the drawing takes place
+ * @param nLayers number of layers
+ * 
+*/
+class CanvasPainter(canvas: dom.html.Canvas, nLayers: Int) {
+  private val layers: Array[dom.html.Canvas] = (canvas +: (1 until nLayers).map(_ => dom.document.createElement("canvas").asInstanceOf[dom.html.Canvas])).toArray
+  private val contexts = layers.map(c => c.getContext("2d").asInstanceOf[dom.CanvasRenderingContext2D])
+  private var buffers = contexts.map(_.createImageData(canvas.width, canvas.height))
 
   var paintCount = 0
   
-  override def resize(width: Int, height: Int): Unit = {
+  /** Changes the dimensions of the buffer.
+   * 
+   * @param width width of the new canvas in pixels
+   * @param height height of the new canvas in pixels
+  */
+  def resize(width: Int, height: Int): Unit = {
     layers.foreach(c => {
       c.width = width
       c.height = height
@@ -49,7 +33,16 @@ class ArrayPainter(canvas: dom.html.Canvas, nLayers: Int) extends CanvasPainter(
     buffers = contexts.map(_.createImageData(canvas.width, canvas.height))
   }
 
-  override def drawRect(x: Int, y: Int, w: Int, h: Int, c: Color, layer: Int): Unit = {
+  /** Draws a rectangle on one of the layers
+   * 
+   * @param x top-left x coordinate
+   * @param y top-left y coordinate
+   * @param w width
+   * @param h height
+   * @param c color
+   * @param layer layer on which the drawing takes place
+  */
+  def drawRect(x: Int, y: Int, w: Int, h: Int, c: Color, layer: Int): Unit = {
     val start = System.currentTimeMillis()
     val buffer = buffers(layer)
     
@@ -65,7 +58,13 @@ class ArrayPainter(canvas: dom.html.Canvas, nLayers: Int) extends CanvasPainter(
     paintCount += (System.currentTimeMillis() - start).toInt
   }
 
-  override def refresh(layer: Int): Unit = {
+  /** Refreshes the image from the given layer until the top layer.
+   *  Lower layers are not updated.
+   * 
+   * @param layer layer from which the canvas is updated
+   * 
+  */
+  def refresh(layer: Int): Unit = {
     contexts(layer).putImageData(buffers(layer), 0, 0)
     buffers(layer) = contexts(layer).createImageData(canvas.width, canvas.height)
 

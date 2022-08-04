@@ -5,36 +5,63 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Promise
 import scala.scalajs.js
 
+/** Class for executing an action at regular intervals. The animation works
+ *  by maintaining an internal state and incrementing this state at each tick.
+ *  This internal state is multiplied by some factor in order to produce the
+ *  external state. The external state is the time exposed to the user. This
+ *  mechanism allows the external state to be incremented only once every
+ *  n internal step (n being the aforementioned factor) if desired.
+ * 
+ * @constructor create a new animation
+ * @param action function to execute at each update. The current time and
+ *  the length of the step (difference between previous execution and current one)
+ *  are passed as arguments. The action is also executed at instanciation
+ * @param max time at which the animation should reset
+ */
 class Animation(action: (Long, Int) => Future[Unit], max: Long) {
   private var running = false
-  private var increment = Animation.DefaultIncrement
+  private var increment = Animation.InitialIncrement
   private var state = 0L
 
   // Display initial state
   action(mappedState, 0)
 
+  /** Toggles the state of the animation */
   def toggle(): Unit =
     running = !running
     if running then next()
 
+  /** Moves the animation forward based on the provided step
+   * 
+   * @param diff number of steps
+  */
   def move(diff: Long): Unit = set(mappedState + diff)
 
+  /** Sets the animation back to initial state */
   def reset(): Unit = {
-    increment = Animation.DefaultIncrement
+    increment = Animation.InitialIncrement
     running = false
     setInternal(0)
   }
 
+  /** Moves the animation to the provided state
+   * 
+   * @param at new state
+  */
   def set(at: Long): Unit =
     setInternal(at * Animation.ResultInterval)
 
+  /** Halves the speed of the animation */
   def decelerate() = setIncrement(increment / 2)
 
+  /** Doubles the speed of the animation */
   def accelerate() = setIncrement(increment * 2)
 
+  /** Reverse the animation */
   def reverse() =
     increment = - increment
 
+  /** Indicates if the animation is running */
   def isRunning(): Boolean = running
 
   private def mappedState = state / Animation.ResultInterval
@@ -74,9 +101,13 @@ class Animation(action: (Long, Int) => Future[Unit], max: Long) {
 }
 
 object Animation {
-  val DefaultIncrement = 0x10
+  val InitialIncrement = 0x10
   val MinIncrement = 1
   val MaxIncrement = 0x1000000
+  
+  // Factor by which the internal state is multiplied to provide the exposed state
   val ResultInterval = 64
-  val FrameInterval = 16L // time in milliseconds between each iteration
+  
+  // Time in milliseconds between each internal tick
+  val FrameInterval = 16L
 }
