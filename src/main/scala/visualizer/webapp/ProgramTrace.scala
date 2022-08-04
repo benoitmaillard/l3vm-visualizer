@@ -44,11 +44,8 @@ case class ProgramTrace(url: String, clockUrl: String, phaseUrl: String) {
   // }
 
   def readRange(from: Long, length: Int): Future[Iterator[TraceEvent]] = {
-    // TODO simplify this calculation
-    val tLength = math.min(from + 1, length).toInt
     val tMin = math.max(0, from - length + 1)
-    val tMax = tMin + tLength - 1
-    (clockFile.read(tMin) zip clockFile.read(tMax)) flatMap {
+    (clockFile.read(tMin) zip clockFile.read(from)) flatMap {
       case ((from, _), (_, to)) =>
         file.readRange(from, (to - from)).map(_.map(extractEvent))
     }
