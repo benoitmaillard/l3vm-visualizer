@@ -113,6 +113,44 @@ class PhaseIndex(file: ChunkedFile) extends RemoteFile[(TracePhase, Int, Int)] {
   )
 }
 
+abstract class TraceEvent
+case class MemoryRead(address: Int) extends TraceEvent
+case class MemoryWrite(address: Int) extends TraceEvent
+case class PhaseStart(phase: TracePhase) extends TraceEvent
+case class PhaseEnd(phase: TracePhase) extends TraceEvent
+
+enum TracePhase(str: String) {
+  override def toString(): String = str
+
+  case CodeLoad extends TracePhase("Code load")
+  case CodeExecute extends TracePhase("Code execute")
+  case GarbageMark extends TracePhase("Garbage mark")
+  case GarbageSweep extends TracePhase("Garbage sweep")
+}
+
+class TraceFile(file: ChunkedFile) extends RemoteFile[TraceEvent] {
+  private val groupedFile = GroupedFile(file, PhaseIndex.EntryBytes)
+
+  override def length(): Future[Long] = groupedFile.length()
+
+  override def readRange(from: Long, n: Int) =
+    groupedFile.readRange(from, n).map(_.map(extractEvent))
+
+  override def read(i: Long) =
+    groupedFile.read(i).map(extractEvent)
+
+  private def extractEvent(s: Seq[Short]) = {
+    val argument = (s(1) << 8) | s(2)
+
+    s(0) & 0x7F match {
+      case 0 => MemoryRead(argument)
+      case 1 => MemoryWrite(argument)
+      case 2 => PhaseStart(TracePhase.values(argument))
+      case 3 => PhaseEnd(TracePhase.values(argument))
+    }
+  }
+}
+
 object PhaseIndex {
-  val EntryBytes = 9
+  val EntryBytes = 3
 }
